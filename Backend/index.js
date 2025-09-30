@@ -1,6 +1,6 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-const session = require('express-session');
+const session = require('express-session'); /* Necessary? */
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const httpServer = require("http").createServer(app);
@@ -16,6 +16,7 @@ mongoose.connect(dbURI)
     console.log(err);
 });
 
+const User = require('./models/user');
 
 
 const sessionMiddleware = session({
@@ -39,9 +40,10 @@ passport.deserializeUser((user, done) => {
 
 passport.use(
     new LocalStrategy((username, password, done) => {
-        if (username === process.env.ADMINUSERNAME && bcrypt.compareSync(password, process.env.ADMINPASSWORD)) {
+        const user = User.findOne({ username: username});
+        if (bcrypt.compareSync(password, user.password)) {
             console.log('Logged in');
-            return done(null, { id: 1, username: username });
+            return done(null, { id: 1, username: username }); /* Fix the id numbering to allow multiple users */
         } else {
             return done(null, false, { message: 'Invalid credentials' });
         }
@@ -69,7 +71,18 @@ function hash(password) {
         return hash;
 })};
 
-const User = require('./models/user');
+const loginValidation = [
+    username
+        .trim()
+        .escape()
+        .notEmpty()
+        .withMessage('Username is required'),
+    password
+        .trim()
+        .notEmpty()
+        .withMessage('Password is required')
+];
+
 
 // Socket connections
 // Auth stuff
@@ -85,7 +98,7 @@ io.on('connection', function(socket) {
         console.log('user disconnected');
     });
     
-    socket.on('register', async function(username, password) {
+    socket.on('register', loginValidation, async function(username, password) {
         hashedpw = hash(password);
         const user = new User({
             username,
@@ -98,26 +111,20 @@ io.on('connection', function(socket) {
         console.error(err);
         callback({ status: 'error' });
     }
-});
+    });
+
+    socket.on('login', loginValidation, passport.authenticate('local', {
+        /* Do something to let the app know the result */
+}));
 
     /*
-    socket.on('register', function(username, password) {
+    socket.on('add-a-thing', function(thing) {
         if (socket.request.user) { <-- for logged in user check
             
         }
     });
     */
 
-    socket.on('like-feedback', async function (id, callback) {
-        await Feedback.updateOne({ _id: id }, { $inc: { likes: 1 }})
-            .catch(err => {
-                console.log(err);
-                callback({status: "error"});
-            });
-        
-        let document = await Feedback.findOne({ _id: id });
-        callback({status: "ok", likes: document.likes });
-    });
 });
 
 
