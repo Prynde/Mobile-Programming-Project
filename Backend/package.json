@@ -1,0 +1,14 @@
+{
+  "name": "mobile-programming-project",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "Saara Rinne, Juho Nevalainen, Miika Ståhl",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node express",
+    "dev": "nodemon express",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
