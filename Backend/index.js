@@ -1,13 +1,26 @@
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const session = require('express-session'); /* Necessary? */
-const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const express = require('express');
+const app = express();
 const httpServer = require("http").createServer(app);
 var io = require('socket.io')(httpServer);
+const mongoose = require('mongoose');
+mongoose.Promise = require("bluebird");
+const socketioAuth = require("socketio-auth");
+const dotenv = require('dotenv');
+dotenv.config();
+
+
+io.on('connection', socket => {
+  console.log('client connected on websocket');
+  socket.on('test', function () {
+    console.log('Button press');
+    callback({status: "ok"});
+  })
+});
+
+/*
 
 const dbURI = 'mongodb+srv://' + process.env.DBUSERNAME + ':' + process.env.DBPASSWORD + '@' + process.env.CLUSTER + '.c7byj1n.mongodb.net/' + process.env.DB + '?retryWrites=true&w=majority&appName=Hamk-projects';
-
+/*
 mongoose.connect(dbURI)
 .then((result) => {
     console.log('Connected to the DB');
@@ -16,118 +29,41 @@ mongoose.connect(dbURI)
     console.log(err);
 });
 
+const mongoOpts = { useMongoClient: true };
+io.use((socket, next) => {
+  mongoose
+    .connect(dbURI, mongoOpts)
+    .then(() => next())
+    .catch(e => console.error(e.stack));
+});
+
+
 const User = require('./models/user');
 
 
-const sessionMiddleware = session({
-  secret: 'You will never guess it',
-  resave: false,
-  saveUninitialized: true,
-});
 
-app.use(sessionMiddleware);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-  
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
-
-passport.use(
-    new LocalStrategy((username, password, done) => {
-        const user = User.findOne({ username: username});
-        if (bcrypt.compareSync(password, user.password)) {
-            console.log('Logged in');
-            return done(null, { id: 1, username: username }); /* Fix the id numbering to allow multiple users */
-        } else {
-            return done(null, false, { message: 'Invalid credentials' });
-        }
-    })
-);
-
-const saltRounds = 10; // Typically a value between 10 and 12
-
-bcrypt.genSalt(saltRounds, (err, salt) => {
-if (err) {
-    // Handle error
-    return;
-}
-
-// Salt generation successful, proceed to hash the password
-});
-
-function hash(password) {
-    bcrypt.hash(password, salt, (err, hash) => {
-        if (err) {
-            // Handle error
-            return;
-        }
-        // Hashing successful, 'hash' contains the hashed password
-        return hash;
-})};
-
-const loginValidation = [
-    username
-        .trim()
-        .escape()
-        .notEmpty()
-        .withMessage('Username is required'),
-    password
-        .trim()
-        .notEmpty()
-        .withMessage('Password is required')
-];
-
-
-// Socket connections
-// Auth stuff
-const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
-
-io.use(wrap(sessionMiddleware));
-io.use(wrap(passport.initialize()));
-io.use(wrap(passport.session()));
-
-io.on('connection', function(socket) {
-    console.log("a user has connected!");
-    socket.on('disconnect', function() {
-        console.log('user disconnected');
-    });
-    
-    socket.on('register', loginValidation, async function(username, password) {
-        hashedpw = hash(password);
-        const user = new User({
-            username,
-            hashedpw
-        });
-        try {
-            await user.save();
-            callback({ status: 'ok' });
-        } catch (err) {
-        console.error(err);
-        callback({ status: 'error' });
+const authenticate = async (client, username, password, register, callback) => {
+    console.log("input");
+try {
+    if (register) {
+      const user = await User.create({ username, password });
+      callback(null, !!user);
+    } else {
+      const user = await User.findOne({ username });
+      callback(null, user && user.validPassword(password));
     }
-    });
+  } catch (error) {
+    callback(error);
+  }
+};
 
-    socket.on('login', loginValidation, passport.authenticate('local', {
-        /* Do something to let the app know the result */
-}));
-
-    /*
-    socket.on('add-a-thing', function(thing) {
-        if (socket.request.user) { <-- for logged in user check
-            
-        }
-    });
-    */
-
-});
+const postAuthenticate = client => {
+  client.on("poke", () => client.emit("logged in"));
+};
 
 
-// Create listener for connections
+socketioAuth(io, { authenticate, postAuthenticate, timeout: "none" });
+*/
+
 const PORT = process.env.PORT || 3300;
 httpServer.listen(PORT, () => console.log(`App listening on port ${PORT}`));
