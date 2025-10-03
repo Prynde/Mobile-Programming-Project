@@ -9,18 +9,17 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 
-io.on('connection', socket => {
+io.on('connection', function(socket) {
   console.log('client connected on websocket');
-  socket.on('test', function () {
+  socket.on('test', function (callback) {
     console.log('Button press');
-    callback({status: "ok"});
   })
 });
 
-/*
+
 
 const dbURI = 'mongodb+srv://' + process.env.DBUSERNAME + ':' + process.env.DBPASSWORD + '@' + process.env.CLUSTER + '.c7byj1n.mongodb.net/' + process.env.DB + '?retryWrites=true&w=majority&appName=Hamk-projects';
-/*
+
 mongoose.connect(dbURI)
 .then((result) => {
     console.log('Connected to the DB');
@@ -29,20 +28,10 @@ mongoose.connect(dbURI)
     console.log(err);
 });
 
-const mongoOpts = { useMongoClient: true };
-io.use((socket, next) => {
-  mongoose
-    .connect(dbURI, mongoOpts)
-    .then(() => next())
-    .catch(e => console.error(e.stack));
-});
-
-
 const User = require('./models/user');
 
-
-
-const authenticate = async (client, username, password, register, callback) => {
+const authenticate = async (client, data, callback) => {
+  const { username, password, register } = data;
     console.log("input");
 try {
     if (register) {
@@ -63,7 +52,7 @@ const postAuthenticate = client => {
 
 
 socketioAuth(io, { authenticate, postAuthenticate, timeout: "none" });
-*/
+
 
 const PORT = process.env.PORT || 3300;
 httpServer.listen(PORT, () => console.log(`App listening on port ${PORT}`));

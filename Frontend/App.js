@@ -1,17 +1,21 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button } from 'react-native';
 import io from "socket.io-client";
-const socket = io.connect("https://lappis.mau-mooneye.ts.net:3000", {transports: ['websocket']});
-
+const socket = io.connect("https://lappis.mau-mooneye.ts.net", {transports: ['websocket']});
+const data = {
+      username: "test",
+      password: "test",
+    };
 const socketTest = () => {
-  socket.emit("test", "test");
+  alert("Status: " + socket.connected);
+  socket.emit("authentication", { ...data, register: true });
 };
 
 export default function App() {
   return (
     <View style={styles.container}>
       <Text>Open up App.js to start working on your app!</Text>
-      <Button onClick={socketTest} color="blue" size="large"
+      <Button onPress={socketTest} color="blue" size="large"
         title="Test">
           Test
       </Button>
