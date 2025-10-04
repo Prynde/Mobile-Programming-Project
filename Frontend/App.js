@@ -1,6 +1,14 @@
+import React, {useState} from 'react';
+
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button } from 'react-native';
 import io from "socket.io-client";
+
+import LoginRegister from './components/LoginRegister';
+import MainMenu from './components/MainMenu';
+import TopBar from './components/TopBar';
+import { ServerGetUserListId, ServerGetUsers } from './serverFunctions';
+
 const socket = io.connect("https://lappis.mau-mooneye.ts.net", {transports: ['websocket']});
 const data = {
       username: "test",
@@ -12,23 +20,29 @@ const socketTest = () => {
 };
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(undefined); // Kirjautunut käyttäjä
+
+  const testiCurrentUser = () => {
+    console.log(currentUser);
+  }
+  const testiUsers = () => {
+    console.log(ServerGetUsers());
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <Button onPress={socketTest} color="blue" size="large"
-        title="Test">
-          Test
-      </Button>
-      <StatusBar style="auto" />
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+        <Button onPress={socketTest} color="blue" size="large" title="Test">Test</Button>
+        <TopBar currentUser={currentUser} setCurrentUser={setCurrentUser} />
+        {currentUser !== undefined ? <MainMenu setCurrentUser={setCurrentUser} /> : <LoginRegister setCurrentUser={setCurrentUser} />}
+        <Button title="TESTI: Kirjautunut käyttäjä" onPress={testiCurrentUser}/>
+        <Button title="TESTI: Kaikki käyttäjät" onPress={testiUsers}/>
+        <StatusBar style="auto" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
