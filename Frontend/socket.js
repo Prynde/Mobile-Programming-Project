@@ -9,7 +9,7 @@ const socketTest2 = () => { // Test login
   socket.emit("authentication",  { username, password } 
 )};
 
-const socketTest3 = () => { // Test login
+const socketTest3 = () => { // Test if logged in
   socket.emit("logintest"
 )};
 
