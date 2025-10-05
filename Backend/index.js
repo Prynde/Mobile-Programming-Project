@@ -90,7 +90,7 @@ const postAuthenticate = client => {
 };
 
 
-socketioAuth(io, { authenticate, postAuthenticate, timeout: "none" });
+socketioAuth(io, { authenticate, postAuthenticate, timeout: "100000" });
 
 
 const PORT = process.env.PORT || 3300;

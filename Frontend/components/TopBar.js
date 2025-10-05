@@ -15,7 +15,7 @@ export default function TopBar({currentUser, setCurrentUser}) {
     }
     return(
         <View style={styles.topBar}>
-            <Text style={styles.topBarTitle}>Hei {currentUser.name}</Text>
+            <Text style={styles.topBarTitle}>Tervetuloa {currentUser}</Text>
             <TouchableOpacity style={styles.buttonLogOut} onPress={handleLogOut}>
                 <Text>Kirjaudu ulos</Text>
             </TouchableOpacity>
@@ -56,5 +56,6 @@ const styles = StyleSheet.create({
         marginLeft: "auto",
         borderRadius: 15,
         borderWidth: 2,
-        borderColor: "#40c844ff",    }
+        borderColor: "#40c844ff",
+    }
 })
