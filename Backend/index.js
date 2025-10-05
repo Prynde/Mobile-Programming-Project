@@ -43,27 +43,30 @@ async function hashpw(password) {
                     // Handle error
                     return;
                 }
-                resolve(bcryptpw = hash);
+                resolve(bcryptpw = hash); // return hashed password
             });
         });
     });
 };
 
 const authenticate = async (client, data, callback) => {
+    if (data.username == '' || data.password == '') {
+        return callback(new Error("No username or password given"));
+    };
     const user = await User.findOne({username:data.username});
 
-    if (data.register) {
+    if (data.register) { // register new user if true
         if (user) {
             return callback(new Error("User already exists"));
         } else {
-            await hashpw(data.password);
+            await hashpw(data.password); // hash the password
             const user = await User.create({ username:data.username, password:bcryptpw });
             io.emit("registered", {message: data.username})
         }
-    } else {
+    } else { // else attempt to login
     
         if (!user) {
-            return callback(new Error("User not found"));
+            return callback(new Error("User not found")); // -> client.emit("unauthorized")...
         } else if (!bcrypt.compareSync(data.password, user.password)) {
             return callback(new Error("Authentication failure"));
         } else {
@@ -87,7 +90,7 @@ const postAuthenticate = client => {
 };
 
 
-socketioAuth(io, { authenticate, postAuthenticate, timeout: "100000" });
+socketioAuth(io, { authenticate, postAuthenticate, timeout: "none" });
 
 
 const PORT = process.env.PORT || 3300;
