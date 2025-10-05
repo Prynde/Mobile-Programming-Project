@@ -8,27 +8,36 @@ import LoginRegister from './components/LoginRegister';
 import MainMenu from './components/MainMenu';
 import TopBar from './components/TopBar';
 import { ServerGetUserListId, ServerGetUsers } from './serverFunctions';
-
+ // Ottaa yhteyden seuraavaan osoitteeseen ja lähettää datan.
 const socket = io.connect("https://lappis.mau-mooneye.ts.net", {transports: ['websocket']});
-const data = {
-      username: "test",
-      password: "test",
-    };
-const socketTest = () => {
-  alert("Status: " + socket.connected);
-  socket.emit("authentication", { ...data, register: true });
-};
+
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(undefined); // Kirjautunut käyttäjä
+  
+  const data = {
+    username: "test",
+    password: "test",
+  };
 
-  const testiCurrentUser = () => {
-    console.log(currentUser);
-  }
-  const testiUsers = () => {
-    console.log(ServerGetUsers());
+  const registerUser = () => {
+    socket.emit("authentication", { ...data, register: true });
   }
 
+  const logInUser = () => {
+      console.log(socket.connected);
+      socket.emit("authentication", { ...data, register: false });
+      setTimeout(() => {
+          checkLogIn();
+      }, 1000)
+  };
+  
+  const checkLogIn = () => {
+    socket.emit("poke", { ...data, register: false });
+    socket.on("logged in", () => setCurrentUser(data.username));
+  };
+
+  console.log(currentUser)
   return (
     <View
       style={{
@@ -37,11 +46,11 @@ export default function App() {
         alignItems: "center",
       }}
     >
-        <Button onPress={socketTest} color="blue" size="large" title="Test">Test</Button>
+        <Button onPress={logInUser} color="blue" size="large" title="Test" />
+        <Button onPress={registerUser} color="blue" size="large" title="Register test user" />
+        <Button onPress={()=>console.log(currentUser)} color="blue" size="large" title="Current user" />
         <TopBar currentUser={currentUser} setCurrentUser={setCurrentUser} />
         {currentUser !== undefined ? <MainMenu setCurrentUser={setCurrentUser} /> : <LoginRegister setCurrentUser={setCurrentUser} />}
-        <Button title="TESTI: Kirjautunut käyttäjä" onPress={testiCurrentUser}/>
-        <Button title="TESTI: Kaikki käyttäjät" onPress={testiUsers}/>
         <StatusBar style="auto" />
     </View>
   );
