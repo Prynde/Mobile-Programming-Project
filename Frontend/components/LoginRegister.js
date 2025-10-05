@@ -1,21 +1,28 @@
 import React, {useState} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { ServerLoginUser, ServerRegisterUser } from '../serverFunctions';
+import io from "socket.io-client";
 // Komponentti, mikä hallitsee kirjautumisen ja rekisteröitymisen näyttämisen.
-export default function LoginRegister({setCurrentUser}) { 
+export default function LoginRegister({setCurrentUser, socket}) { 
     const [pressed, setPressed] = useState(false); // Jos false, niin näytetään kirjautumiskomponentti, muuten rekisteröitymiskomponentti.
     return(
         <>
-            {pressed === false ? <Login setPressed={setPressed} setCurrentUser={setCurrentUser} /> : <Register setPressed={setPressed} />}
+            {pressed === false ? <Login setPressed={setPressed} setCurrentUser={setCurrentUser} socket={socket} /> : <Register setPressed={setPressed} socket={socket} />}
         </>
     );
 }
 
-// Kirjautumiskomponentti.
-function Login({setPressed, setCurrentUser}) {
+// Log in component.
+function Login({setPressed, setCurrentUser, socket}) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loginCorrect, setLoginCorrect] = useState(true);
+
+    //Username and password are saved to object which is sent to server.
+    const data = {
+        username: username, //test
+        password: password, //test
+    };
 
     const handleUsername = (props) => { 
         setUsername(props);
@@ -28,17 +35,32 @@ function Login({setPressed, setCurrentUser}) {
     const handleRegisterButton = () => {
         setPressed(true);
     }
+
+    // Tries to log in with username and password.
     const handleLoginButton = () => {
-        const login = ServerLoginUser(username, password);
-        if (login !== false) {
-            setLoginCorrect(true);
-            setCurrentUser(login);
-        }
-        else {
-            setLoginCorrect(false);
-        }
-        
-    }
+        console.log(socket.connected);
+        socket.emit("authentication", { ...data, register: false });
+        setTimeout(() => {
+            checkLogIn();
+        }, 1000)
+    };
+    
+    // Sends an event to server for checking if user is authorized to log in.
+    const checkLogIn = () => {
+        socket.emit("logintest", { ...data, register: false });
+    };
+
+    // Show message for succesfull login
+    socket.on("loggedIn", (message) => { 
+        setCurrentUser(data.username)
+        console.log("Logged in: " + message.message)
+    });
+
+    // Show message if wrong username or password was given
+    socket.on('unauthorized', (err) => { 
+        setLoginCorrect(false);
+        console.log("Authentication error: " + err.message);
+    });
 
     return (
         <View style={styles.loginBox}>
@@ -57,11 +79,17 @@ function Login({setPressed, setCurrentUser}) {
     );
 }
 
-// Rekisteröitymiskomponentti.
-function Register({setPressed}) {
+// Registers users.
+function Register({setPressed, socket}) {
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [registerCorrect, setRegisterCorrect] = React.useState(true);
+
+    //Username and password are saved to object which is sent to server.
+    const data = {
+        username: username, //test
+        password: password, //test
+    };
 
     const handleUsername = (props) => { 
         setUsername(props);
@@ -72,23 +100,24 @@ function Register({setPressed}) {
     }
 
     const handleRegisterButton = () => {
-        const newUser = ServerRegisterUser(username, password);
-        console.log("NEWUSER: " + newUser);
-        if (newUser !== false) {
-            setRegisterCorrect(true);
-            setPressed(false);
-        }
-        else {
-            setRegisterCorrect(false);
-        }
+        socket.emit("authentication", { ...data, register: true });
+
     }
+    socket.on('unauthorized', (message) => { 
+        console.log("Authentication error: " + message.message);
+        setRegisterCorrect(false)
+    });
+
+    socket.on('registered', (message) => { // Show message for succesfull registration
+        console.log("Registered succesfully: " + message.message);
+    });
 
     const returnToLogin = () => {
         setPressed(false);
     }
     return (
         <View style={styles.loginBox}>
-            {registerCorrect === true ? <Text style={styles.textInputTop}>Rekisteröidy</Text> : <Text style={styles.textInputTopError}>Käyttäjätunnus on jo käytössä!</Text>}
+            {registerCorrect === true ? <Text style={styles.textInputTop}>Rekisteröidy</Text> : <Text style={styles.textInputTopError}>Virhe rekisteröityessä!</Text>}
             <TextInput style={styles.textInput} placeholder="Käyttäjätunnus" onChangeText={handleUsername}/>
             <TextInput style={styles.textInput} placeholder="Salasana" secureTextEntry={true} onChangeText={handlePassword}/>
             <TouchableOpacity style={styles.buttonInput} onPress={handleRegisterButton}>
