@@ -23,8 +23,9 @@ export default function App() {
       }}
     >
         <Button onPress={()=>console.log(currentUser)} color="blue" size="large" title="Current user" />
+        <Button onPress={()=>setCurrentUser("MobileMobiloija")} color="blue" size="large" title="Test: go to main menu." />
         <TopBar currentUser={currentUser} setCurrentUser={setCurrentUser} />
-        {currentUser !== undefined ? <MainMenu setCurrentUser={setCurrentUser} /> : <LoginRegister setCurrentUser={setCurrentUser} socket={socket} />}
+        {currentUser !== undefined ? <MainMenu currentUser={currentUser} /> : <LoginRegister setCurrentUser={setCurrentUser} socket={socket} />}
         <StatusBar style="auto" />
     </View>
   );
