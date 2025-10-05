@@ -33,11 +33,27 @@ export default function App() {
   };
   
   const checkLogIn = () => {
-    socket.emit("poke", { ...data, register: false });
-    socket.on("logged in", () => setCurrentUser(data.username));
+    socket.emit("logintest", { ...data, register: false });
+    socket.on("loggedin", () => setCurrentUser(data.username));
   };
 
-  console.log(currentUser)
+  socket.on('unauthorized', (err) => { // Show message if wrong username or password was given
+    alert("There was an error with the authentication: " + err.message);
+  });
+
+  socket.on('registered', (message) => { // Show message for succesfull registration
+    alert(message.message + " registered succesfully.");
+  });
+
+  socket.on('loggedIn', (message) => { // Show message for succesfull login
+    alert(message.message);
+  });
+
+  socket.on('testok', (message) => { // Show message for succesfull logged in test
+    alert("Test ok");
+  });
+
+console.log(currentUser)
   return (
     <View
       style={{
