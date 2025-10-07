@@ -11,19 +11,19 @@ const fs = require("fs");
 
 
 
-io.on('connection', function(socket) {
-  console.log('client connected on websocket');
+io.on('connection', function (socket) {
+    console.log('client connected on websocket');
 });
 
 const dbURI = 'mongodb+srv://' + process.env.DBUSERNAME + ':' + process.env.DBPASSWORD + '@' + process.env.CLUSTER + '.c7byj1n.mongodb.net/' + process.env.DB + '?retryWrites=true&w=majority&appName=Hamk-projects';
 
 mongoose.connect(dbURI)
-.then((result) => {
-    console.log('Connected to the DB');
-})
-.catch((err) => {
-    console.log(err);
-});
+    .then((result) => {
+        console.log('Connected to the DB');
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 
 const User = require('./models/user');
 var bcryptpw;
@@ -37,7 +37,7 @@ async function hashpw(password) {
                 return;
             }
             // Salt generation successful, proceed to hash the password
-        
+
             bcrypt.hash(password, salt, (err, hash) => {
                 if (err) {
                     // Handle error
@@ -53,24 +53,24 @@ const authenticate = async (client, data, callback) => {
     if (data.username == '' || data.password == '') {
         return callback(new Error("No username or password given"));
     };
-    const user = await User.findOne({username:data.username});
+    const user = await User.findOne({ username: data.username });
 
     if (data.register) { // register new user if true
         if (user) {
             return callback(new Error("User already exists"));
         } else {
             await hashpw(data.password); // hash the password
-            const user = await User.create({ username:data.username, password:bcryptpw });
-            io.emit("registered", {message: data.username})
+            const user = await User.create({ username: data.username, password: bcryptpw });
+            io.emit("registered", { message: data.username })
         }
     } else { // else attempt to login
-    
+
         if (!user) {
             return callback(new Error("User not found")); // -> client.emit("unauthorized")...
         } else if (!bcrypt.compareSync(data.password, user.password)) {
             return callback(new Error("Authentication failure"));
         } else {
-            client.emit("loggedIn", {message: "Logged in succesfully."})
+            client.emit("loggedIn", { message: "Logged in succesfully." })
             return callback(null, data.username && true); // Internal callback to register the login event
         };
     };
@@ -78,19 +78,40 @@ const authenticate = async (client, data, callback) => {
 
 
 const postAuthenticate = client => {
-  /* Handle authenticated socket calls */
-  client.on("logintest", () => client.emit("testok"));
+    /* Handle authenticated socket calls */
+    client.on("logintest", () => client.emit("testok"));
 
-  // File upload
-  client.on("upload", (file, callback) => {
-    fs.writeFile("/images", file, (err) => {
-      callback({ message: err ? "failure" : "success" });
+    // File upload, needs more code to link the image to a user in MongoDB
+    client.on("upload", async (file, callback) => {
+        fs.writeFile("/images", file, (err) => {
+            callback({ message: err ? "failure" : "success" });
+        });
+        let path = '/images/'; // Find the filename...
+        const user = await User.updateOne({ username: data.username }, { profilepic: path });
+
     });
-  });
+
+    // Password change
+    client.on("pwchange", async (data, callback) => {
+        if (data.oldpassword == '' || data.password == '' || data.password2 == '') {
+            callback("Empty field");
+            return;
+        };
+        const user = await User.findOne({ username: data.username });
+        if (bcrypt.compareSync(data.password, user.password)) {
+            if (data.password == data.password2) {
+                await hashpw(data.password); // hash the password
+                const user = await User.updateOne({ username: data.username }, { password: bcryptpw });
+                io.emit("pwchanged", { message: data.username })
+            } else {
+                callback("New password-fields do not match");
+            };
+        };
+    });
 };
 
 
-socketioAuth(io, { authenticate, postAuthenticate, timeout: "100000" });
+socketioAuth(io, { authenticate, postAuthenticate, timeout: "10000000" });
 
 
 const PORT = process.env.PORT || 3300;
