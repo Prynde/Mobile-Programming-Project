@@ -7,7 +7,8 @@ import io from "socket.io-client";
 import LoginRegister from './components/LoginRegister';
 import MainMenu from './components/MainMenu';
 import TopBar from './components/TopBar';
- 
+import Profile from './components/Profile';
+
 // Used for connecting app to server. Socket variable is passed to several components
 const socket = io.connect("https://lappis.mau-mooneye.ts.net", {transports: ['websocket']});
 
