@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-export default function Profile() {
+export default function Profile({setVisibility}) {
 
     let [image, setImage, result] = useState("");
+
+    const handleProfile = () => {
+        setVisibility(false)
+    }
 
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
@@ -42,11 +46,30 @@ export default function Profile() {
     };
 
     return (
+
         <View style={styles.container}>
-            <Button title="Pick an image from gallery" onPress={pickImage} />
-            <Button title="Use camera" onPress={camera} />
-            <Button title="Save as profile picture" onPress={upload} />
-            {image && <Image source={{ uri: image }} style={styles.image} />}
+            <View style={styles.subContainer}>
+                <Text style={styles.profileHeader}>Profiilikuva</Text>
+                <TouchableOpacity style={styles.buttonInput} onPress={pickImage}>
+                    <Text>Valitse galleriasta</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonInput} onPress={camera}>
+                    <Text>Käytä kameraa</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonInput} onPress={upload}>
+                    <Text>Tallenna profiilikuvana</Text>
+                </TouchableOpacity>
+                {image && <Image source={{ uri: image }} style={styles.image} />}
+            </View>
+            
+            <View style={styles.subContainer}>
+                <Text style={styles.profileHeader}>Muuta</Text>
+                <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
+                    <Text>Palaa takaisin</Text>
+                </TouchableOpacity>
+            </View>
+
+
         </View>
     );
 }
@@ -54,11 +77,46 @@ export default function Profile() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        flexDirection: "column",
+        width: "100%",
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: "flex-start",
+        height: "50%",
+        backgroundColor: "#818080ff"
+    },
+    subContainer: {
+        flex: 1,
+        width: "80%",
+        height: "50%",
+        flexDirection: "column",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        backgroundColor: "#666666ff",
+        borderWidth: 2,
+        marginBottom: 5,
+        
+    },
+    profileHeader: {
+        fontSize: 20,
+        marginTop: "auto",
+        marginBottom: "auto",  
+        marginLeft: "auto",
+        marginRight: "auto",  
     },
     image: {
         width: 200,
         height: 200,
     },
+    buttonInput: {
+        width: "70%",
+        height: 50,
+        marginTop: 5,
+        backgroundColor: "#abababff",
+        alignItems: "center",
+        justifyContent: "space-around",
+        borderRadius: 15,
+        borderWidth: 2,
+        borderColor: "#40c844ff",    
+    },
+
 });

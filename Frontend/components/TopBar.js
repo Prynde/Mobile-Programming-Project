@@ -1,9 +1,16 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, {useState} from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Modal } from "react-native";
+import Profile from './Profile';
 
 export default function TopBar({currentUser, setCurrentUser}) { 
+    const [visibility, setVisibility] = useState(false)
+    
     const handleLogOut = () => {
         setCurrentUser(undefined);
+    }
+
+    const handleProfile = () => {
+        setVisibility(true)
     }
 
     if (currentUser === undefined) { 
@@ -15,10 +22,18 @@ export default function TopBar({currentUser, setCurrentUser}) {
     }
     return(
         <View style={styles.topBar}>
-            <Text style={styles.topBarTitle}>Tervetuloa {currentUser}</Text>
+            <Text style={styles.topBarTitle}>{currentUser}</Text>
             <TouchableOpacity style={styles.buttonLogOut} onPress={handleLogOut}>
                 <Text>Kirjaudu ulos</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.buttonLogOut} onPress={handleProfile}>
+                <Text>Avaa profiili</Text>
+            </TouchableOpacity>
+
+            <Modal visible={visibility}>
+                <Profile setVisibility={setVisibility} />
+            </Modal>
         </View>
     );
 }
