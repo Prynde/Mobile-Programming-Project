@@ -1,10 +1,20 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList } from "react-native";
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
+import ListContent from './ListContent';
+
 
 export default function MainMenu({currentUser}) {
     const [newList, setNewList] = useState("");
     const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
     const [shoppingList, setNewShoppingList] = useState([]); // For testing without backend!
+    const [selectedList, setSelectedList] = useState()
+    const [visibility, setVisibility] = useState(false) // Shows shopping list.
+    
+    // Opens pressed shopping list.
+    const handleListContent = (props) => {
+        setSelectedList(props)
+        setVisibility(true)
+    }
 
     const handleNewList = (props) => {
         setNewList(props);
@@ -31,14 +41,17 @@ export default function MainMenu({currentUser}) {
     // Titles of lists are shown. For now also creation dates.
     const renderList = (item) => {
         return (
-            <TouchableOpacity style={styles.listItemStyle} onPress={() => console.log(item.item.id + " " + item.item.content[0].title)}>
-                <Text>{item.item.content[0].title} {item.item.content[0].date}</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={styles.listItemStyle} onPress={() => handleListContent(item.item)}>
+                    <Text>{item.item.content[0].title} {item.item.content[0].date}</Text>
+                </TouchableOpacity>
         )   
     }
 
     return(
         <View style={styles.mainMenu}>
+                <Modal visible={visibility}>
+                    <ListContent setVisibility={setVisibility} selectedList={selectedList} />
+                </Modal>
             <View style={styles.mainMenuNewList}>
                 <TextInput placeholder='Uusi ostoslista' style={styles.textInputNewList} onChangeText={handleNewList} />
                 <TouchableOpacity style={styles.buttonNewList} onPress={handleNewListButton}>
