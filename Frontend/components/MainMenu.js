@@ -1,17 +1,20 @@
-import React, { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import React, {useState} from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
+import ListContent from './ListContent';
 
-export default function MainMenu({ currentUser }) {
-  const [newList, setNewList] = useState("");
-  const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
-  const [shoppingList, setNewShoppingList] = useState([]); // For testing without backend!
+
+export default function MainMenu({currentUser}) {
+    const [newList, setNewList] = useState("");
+    const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
+    const [shoppingList, setNewShoppingList] = useState([]); // For testing without backend!
+    const [selectedList, setSelectedList] = useState()
+    const [visibility, setVisibility] = useState(false) // Shows shopping list.
+    
+    // Opens pressed shopping list.
+    const handleListContent = (props) => {
+        setSelectedList(props)
+        setVisibility(true)
+    }
 
   const handleNewList = (props) => {
     setNewList(props);
@@ -40,7 +43,38 @@ export default function MainMenu({ currentUser }) {
   const handleShownAll = () => {
     setShown(true);
   };
+  // Branch Conflict --> Miika: Tämä näyttäisi uudemmalta koodilta? kts. seuraava Branch Conflict kommentti rivi 77-125
+    // Titles of lists are shown. For now also creation dates.
+    const renderList = (item) => {
+        return (
+                <TouchableOpacity style={styles.listItemStyle} onPress={() => handleListContent(item.item)}>
+                    <Text>{item.item.content[0].title} {item.item.content[0].date}</Text>
+                </TouchableOpacity>
+        )   
+    }
 
+    return(
+        <View style={styles.mainMenu}>
+                <Modal visible={visibility}>
+                    <ListContent setVisibility={setVisibility} selectedList={selectedList} />
+                </Modal>
+            <View style={styles.mainMenuNewList}>
+                <TextInput placeholder='Uusi ostoslista' style={styles.textInputNewList} onChangeText={handleNewList} />
+                <TouchableOpacity style={styles.buttonNewList} onPress={handleNewListButton}>
+                    <Text>Luo</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.mainMenuSelectList}>
+                <TouchableOpacity style={styles.buttonInput} onPress={handleShownFilter}>
+                    <Text>Aktiiviset ostoslistat</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonInput} onPress={handleShownAll}>
+                    <Text>Kaikki ostoslistat</Text>
+                </TouchableOpacity>
+            </View>
+            <View style={styles.listStyle}>
+                {shoppingList.length === 0 ? <Text style={styles.topBarTitle}>Sinulla ei ole yhtään ostoslistaa.</Text> :
+/* Branch Conflict --> Miika: minun silmään tämä osuus on vanhentunut ja ylempänä oleva koodi korvaa tämän, testataan ja tutkitaan...
   // Titles of lists are shown. For now also creation dates.
   const renderList = (item) => {
     return (
@@ -63,7 +97,7 @@ export default function MainMenu({ currentUser }) {
         <TextInput
           placeholder="Uusi ostoslista"
           style={styles.textInputNewList}
-          onChangeText={handleNewList}
+          onChangeText={htesandleNewList}
         />
         <TouchableOpacity
           style={styles.buttonNewList}
@@ -88,6 +122,7 @@ export default function MainMenu({ currentUser }) {
           <Text style={styles.topBarTitle}>
             Sinulla ei ole yhtään ostoslistaa.
           </Text>
+*/
         ) : (
           <FlatList
             style={styles.listFlatStyle}
