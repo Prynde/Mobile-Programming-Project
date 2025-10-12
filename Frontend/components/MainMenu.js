@@ -47,7 +47,9 @@ export default function MainMenu({currentUser}) {
     // Titles of lists are shown. For now also creation dates.
     const renderList = (item) => {
         return (
-                <TouchableOpacity style={styles.listItemStyle} onPress={() => handleListContent(item.item)}>
+                <TouchableOpacity 
+                  style={styles.listItemStyle} 
+                  onPress={() => handleListContent(item.item)}>
                     <Text>{item.item.content[0].title} {item.item.content[0].date}</Text>
                 </TouchableOpacity>
         )   
@@ -56,16 +58,28 @@ export default function MainMenu({currentUser}) {
     return(
         <View style={styles.mainMenu}>
                 <Modal visible={visibility}>
-                    <ListContent setVisibility={setVisibility} selectedList={selectedList} />
+                    <ListContent 
+                      setVisibility={setVisibility} 
+                      selectedList={selectedList} />
                 </Modal>
             <View style={styles.mainMenuNewList}>
-                <TextInput placeholder='Uusi ostoslista' style={styles.textInputNewList} onChangeText={handleNewList} />
-                <TouchableOpacity style={styles.buttonNewList} onPress={handleNewListButton}>
+                <TextInput 
+                  placeholder='Uusi ostoslista' 
+                  style={styles.textInputNewList} 
+                  onChangeText={handleNewList} 
+                />
+                
+                <TouchableOpacity 
+                  style={styles.buttonNewList} 
+                  onPress={handleNewListButton}
+                >
                     <Text>Luo</Text>
                 </TouchableOpacity>
             </View>
             <View style={styles.mainMenuSelectList}>
-                <TouchableOpacity style={styles.buttonInput} onPress={handleShownFilter}>
+                <TouchableOpacity 
+                  style={styles.buttonInput} 
+                  onPress={handleShownFilter}>
                     <Text>Aktiiviset ostoslistat</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonInput} onPress={handleShownAll}>
@@ -73,84 +87,33 @@ export default function MainMenu({currentUser}) {
                 </TouchableOpacity>
             </View>
             <View style={styles.listStyle}>
-                {shoppingList.length === 0 ? <Text style={styles.topBarTitle}>Sinulla ei ole yhtään ostoslistaa.</Text> :
-/* Branch Conflict --> Miika: minun silmään tämä osuus on vanhentunut ja ylempänä oleva koodi korvaa tämän, testataan ja tutkitaan...
-  // Titles of lists are shown. For now also creation dates.
-  const renderList = (item) => {
-    return (
-      <TouchableOpacity
-        style={styles.listItemStyle}
-        onPress={() =>
-          console.log(item.item.id + " " + item.item.content[0].title)
-        }
-      >
-        <Text>
-          {item.item.content[0].title} {item.item.content[0].date}
-        </Text>
-      </TouchableOpacity>
+                {shoppingList.length === 0 ? ( 
+                  <Text style={styles.topBarTitle}>
+                    Sinulla ei ole yhtään ostoslistaa.
+                  </Text>
+                   ) : (
+                        <FlatList 
+                            style={styles.listFlatStyle}
+                            // https://forum.freecodecamp.org/t/how-to-format-these-dates-and-sort/453354/3
+                            // Sorts from newest to olderst. If filtered returns how many is wanted. 
+                            data = {
+                              shown === true 
+                                ? shoppingList.sort(
+                                  (a, b) => 
+                                    new Date(b.content[0].date) - new Date(a.content[0].date)) 
+                                : shoppingList.sort(
+                                  (a, b) => 
+                                    new Date(b.content[0].date) - new Date(a.content[0].date))
+                                    .slice(0, 5)
+                            }
+                            renderItem = {renderList}
+                            keyExtractor={item => item.id.toString()}/> 
+                  )}   
+            </View>
+          </View>
     );
-  };
-
-  return (
-    <View style={styles.mainMenu}>
-      <View style={styles.mainMenuNewList}>
-        <TextInput
-          placeholder="Uusi ostoslista"
-          style={styles.textInputNewList}
-          onChangeText={htesandleNewList}
-        />
-        <TouchableOpacity
-          style={styles.buttonNewList}
-          onPress={handleNewListButton}
-        >
-          <Text>Luo</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.mainMenuSelectList}>
-        <TouchableOpacity
-          style={styles.buttonInput}
-          onPress={handleShownFilter}
-        >
-          <Text>Aktiiviset ostoslistat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonInput} onPress={handleShownAll}>
-          <Text>Kaikki ostoslistat</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.listStyle}>
-        {shoppingList.length === 0 ? (
-          <Text style={styles.topBarTitle}>
-            Sinulla ei ole yhtään ostoslistaa.
-          </Text>
-*/
-        ) : (
-          <FlatList
-            style={styles.listFlatStyle}
-            // https://forum.freecodecamp.org/t/how-to-format-these-dates-and-sort/453354/3
-            // Sorts from newest to olderst. If filtered returns how many is wanted.
-            data={
-              shown === true
-                ? shoppingList.sort(
-                    (a, b) =>
-                      new Date(b.content[0].date) - new Date(a.content[0].date)
-                  )
-                : shoppingList
-                    .sort(
-                      (a, b) =>
-                        new Date(b.content[0].date) -
-                        new Date(a.content[0].date)
-                    )
-                    .slice(0, 5)
-            }
-            renderItem={renderList}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        )}
-      </View>
-    </View>
-  );
 }
-
+          
 const styles = StyleSheet.create({
   mainMenu: {
     flex: 5,
@@ -171,6 +134,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignContents: "top",
     width: "100%",
+    paddingBottom: 50
   },
   mainMenuSelectList: {
     backgroundColor: "white",
