@@ -102,6 +102,18 @@ io.on('connection', function (socket) {
             io.emit("pwcanswer", {status: "Vanha salasa on väärin"});
         };
 }});
+    socket.on("upload", async (buffer) => {
+        console.log("upload");
+        //console.log(file);
+        //console.log(file);
+        //let image = atob(file.content);
+        fs.writeFile("./images/test.png", buffer, (err) => {
+            console.log({ message: err ? "failure" : "success" });
+        });
+        let path = './images/'; // Find the filename...
+        // const user = await User.updateOne({ username: data.username }, { profilepic: path });
+
+    });
 });
 
 

@@ -19,7 +19,7 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
         new Promise(resolve => {
             Resizer.imageFileResizer(
-                file,
+                '/host.exp.exponent/cache/ImagePicker/c574b2ed-7a74-49f7-866f-ca5d524364cd.png',
                 150,
                 150,
                 "PNG",
@@ -68,15 +68,15 @@ export default function Profile({ setVisibility, socket, currentUser }) {
     const upload = async (result) => {
         console.log("upload");
         //console.log(result);
-        //fetch(result.assets[0].uri.slice(7))
-        //.then(response => response.blob())
-        //.then(blob => resizeFile(blob));
-        resizeFile(result.assets[0].uri);
+        //fetch(result.assets[0].uri)
+        //.then(response => 
+        socket.emit("upload", result.assets[0]);
+        
+        //resizeFile(result.assets[0].uri);
         console.log('upload: ' + resized);
 
-        // socket.emit("upload", file, (status) => {
         //    alert(status);
-        // });
+    
 
     };
 
