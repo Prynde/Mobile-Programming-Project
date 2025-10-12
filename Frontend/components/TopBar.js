@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Modal } from "react-native";
 import Profile from './Profile';
 
-export default function TopBar({currentUser, setCurrentUser}) { 
+export default function TopBar({currentUser, setCurrentUser, socket}) { 
     const [visibility, setVisibility] = useState(false)
     
     const handleLogOut = () => {
@@ -32,7 +32,7 @@ export default function TopBar({currentUser, setCurrentUser}) {
             </TouchableOpacity>
 
             <Modal visible={visibility}>
-                <Profile setVisibility={setVisibility} />
+                <Profile setVisibility={setVisibility} socket={socket} currentUser={currentUser} />
             </Modal>
         </View>
     );
