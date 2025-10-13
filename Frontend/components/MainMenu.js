@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } 
 import ListContent from './ListContent';
 
 
-export default function MainMenu({currentUser}) {
+export default function MainMenu({currentUser, socket}) {
     const [newList, setNewList] = useState("");
     const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
     const [shoppingList, setNewShoppingList] = useState([]); // For testing without backend!
@@ -32,6 +32,11 @@ export default function MainMenu({currentUser}) {
         ],
       };
       setNewShoppingList([...shoppingList, newShoppingList]);
+      let data = {
+        username: currentUser,
+        slname: newList.trim()
+      }
+      socket.emit('newsl', data);
     }
   };
 

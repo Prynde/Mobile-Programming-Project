@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
-import Resizer from "react-image-file-resizer";
 //import io from "socket.io-client";
 //const socket = io.connect("https://lappis.mau-mooneye.ts.net", { transports: ['websocket'] });
 
@@ -10,30 +9,10 @@ export default function Profile({ setVisibility, socket, currentUser }) {
     let [image, setImage] = useState("");
     let [pwcResult, setPwcResult] = useState('');
     let result = '';
-    let resized = '';
     const handleProfile = () => {
         setVisibility(false)
     };
-
-    const resizeFile = async (file) => {
-
-        new Promise(resolve => {
-            Resizer.imageFileResizer(
-                '/host.exp.exponent/cache/ImagePicker/c574b2ed-7a74-49f7-866f-ca5d524364cd.png',
-                150,
-                150,
-                "PNG",
-                100,
-                0,
-                uri => {
-                    console.log('uri: ' + uri);
-                    resized = uri;
-                    resolve(uri);
-                },
-                "base64"
-            );
-        });
-    };
+    
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -47,7 +26,6 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
-            upload(result);
         };
     };
 
@@ -61,22 +39,12 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
-
         };
     };
 
     const upload = async (result) => {
-        console.log("upload");
-        //console.log(result);
-        //fetch(result.assets[0].uri)
-        //.then(response => 
-        socket.emit("upload", result.assets[0]);
-        
-        //resizeFile(result.assets[0].uri);
-        console.log('upload: ' + resized);
-
-        //    alert(status);
-    
+    const name = result.assets[0].uri.slice(56);
+        socket.emit("upload", {username: currentUser, name: name, buffer: result.assets[0].base64 });
 
     };
 

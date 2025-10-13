@@ -112,6 +112,7 @@ function Register({setPressed, socket}) {
         console.log("Registered succesfully: " + message.message);
     });
 
+
     const returnToLogin = () => {
         setPressed(false);
     }

@@ -28,6 +28,7 @@ export default function App() {
       <Header
         onProfilePress={() => setProfileVisible(true)}
         onLogout={handleLogout}
+        socket={socket}
       />
 
       <View style={styles.content}>
@@ -50,7 +51,7 @@ export default function App() {
         {profileVisible ? (
           <Profile setVisibility={setProfileVisible} currentUser={currentUser} socket={socket} />
         ) : currentUser !== undefined ? (
-          <MainMenu currentUser={currentUser} />
+          <MainMenu currentUser={currentUser} socket={socket}/>
         ) : (
           <LoginRegister setCurrentUser={setCurrentUser} socket={socket} />
         )}
