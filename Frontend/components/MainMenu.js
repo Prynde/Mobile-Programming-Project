@@ -1,12 +1,13 @@
 import React, {useState} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import ListContent from './ListContent';
+import {createList, readAllList, deleteAllList} from '../sqlconnection/db';
 
 
 export default function MainMenu({currentUser}) {
     const [newList, setNewList] = useState("");
     const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
-    const [shoppingList, setNewShoppingList] = useState([]); // For testing without backend!
+    const [shoppingList, setNewShoppingList] = useState([]);  // For testing without backend!
     const [selectedList, setSelectedList] = useState()
     const [visibility, setVisibility] = useState(false) // Shows shopping list.
     
@@ -20,18 +21,20 @@ export default function MainMenu({currentUser}) {
     setNewList(props);
   };
 
-  // Makes new object which are rendered.
-  const handleNewListButton = () => {
+  // Makes new object which are rendered. Also handles sending list to database and adding it to useState list.
+  const handleNewListButton = async() => {
     if (newList.trim().length > 0) {
       const newDate = new Date();
       const newShoppingList = {
-        id: shoppingList.length + 1,
+        //id: shoppingList.length + 1,
         owner: currentUser,
-        content: [
-          { title: newList.trim(), message: "", date: newDate.toISOString() },
-        ],
+        title: newList.trim(), 
+        message: "", 
+        date: newDate.toISOString()
       };
-      setNewShoppingList([...shoppingList, newShoppingList]);
+      // Sends list to database. Reads all lists from database and adds them to useState list.
+      await createList(newShoppingList)
+      setNewShoppingList(await readAllList())
     }
   };
 
@@ -50,7 +53,7 @@ export default function MainMenu({currentUser}) {
                 <TouchableOpacity 
                   style={styles.listItemStyle} 
                   onPress={() => handleListContent(item.item)}>
-                    <Text>{item.item.content[0].title} {item.item.content[0].date}</Text>
+                    <Text>{item.item.title} {item.item.date}</Text>
                 </TouchableOpacity>
         )   
     }
@@ -100,10 +103,10 @@ export default function MainMenu({currentUser}) {
                               shown === true 
                                 ? shoppingList.sort(
                                   (a, b) => 
-                                    new Date(b.content[0].date) - new Date(a.content[0].date)) 
+                                    new Date(b.date) - new Date(a.date)) 
                                 : shoppingList.sort(
                                   (a, b) => 
-                                    new Date(b.content[0].date) - new Date(a.content[0].date))
+                                    new Date(b.date) - new Date(a.date))
                                     .slice(0, 5)
                             }
                             renderItem = {renderList}
@@ -113,7 +116,14 @@ export default function MainMenu({currentUser}) {
           </View>
     );
 }
-          
+     
+/*
+          <Text>TÄSTÄ</Text>
+                <TouchableOpacity style={styles.buttonNewList} onPress={db_removeAllList}><Text>POISTO</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.buttonNewList} onPress={db_readAllList}><Text>LUESTATE</Text></TouchableOpacity>
+
+*/
+
 const styles = StyleSheet.create({
   mainMenu: {
     flex: 5,

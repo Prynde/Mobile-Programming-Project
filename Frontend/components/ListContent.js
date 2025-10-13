@@ -8,8 +8,8 @@ export default function ListContent({setVisibility, selectedList}) {
     const [edited, setEdited] = useState(false) // If user have edited message in any way this is changed to true.
     // TextInput is initialized with useEffect on first render.
     useEffect(() => {
-        setTitle(selectedList.content[0].title)
-        setMessage(selectedList.content[0].message)
+        setTitle(selectedList.title)
+        setMessage(selectedList.message)
     }, []);
 
     const handleProfile = () => {
@@ -32,10 +32,10 @@ export default function ListContent({setVisibility, selectedList}) {
     // Saves title and message to the object and updates date if either has been edited.
     const handleSaving = () => {
         if (edited) {
-            selectedList.content[0].title = title;
-            selectedList.content[0].message = message;
+            selectedList.title = title;
+            selectedList.message = message;
             const newDate = new Date();
-            selectedList.content[0].date = newDate.toISOString();
+            selectedList.date = newDate.toISOString();
         }
     }
     
