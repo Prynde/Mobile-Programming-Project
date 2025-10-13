@@ -28,6 +28,7 @@ export default function App() {
       <Header
         onProfilePress={() => setProfileVisible(true)}
         onLogout={handleLogout}
+        socket={socket}
       />
 
       <View style={styles.content}>
@@ -44,13 +45,13 @@ export default function App() {
           title="Test: go to main menu."
         />
         {!profileVisible && (
-          <TopBar currentUser={currentUser} setCurrentUser={setCurrentUser} />
+          <TopBar currentUser={currentUser} setCurrentUser={setCurrentUser} socket={socket} />
         )}
 
         {profileVisible ? (
-          <Profile setVisibility={setProfileVisible} />
+          <Profile setVisibility={setProfileVisible} currentUser={currentUser} socket={socket} />
         ) : currentUser !== undefined ? (
-          <MainMenu currentUser={currentUser} />
+          <MainMenu currentUser={currentUser} socket={socket}/>
         ) : (
           <LoginRegister setCurrentUser={setCurrentUser} socket={socket} />
         )}

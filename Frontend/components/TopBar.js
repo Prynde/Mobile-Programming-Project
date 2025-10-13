@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View, Modal } from "react-native";
 import { useFonts } from "expo-font";
 import Profile from "./Profile";
 
-export default function TopBar({ currentUser, setCurrentUser }) {
+export default function TopBar({ currentUser, setCurrentUser, socket }) {
   const [visibility, setVisibility] = useState(false);
   const [fontsLoaded] = useFonts({
     JustAnotherHand: require("../assets/fonts/JustAnotherHand-Regular_e324a4054498cee2bae0e36df7910e11.ttf"),
@@ -16,6 +16,7 @@ export default function TopBar({ currentUser, setCurrentUser }) {
   const handleProfile = () => {
     setVisibility(true);
   };
+
 
   if (currentUser === undefined) {
     return (

@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Buffer } from "buffer";
+
 import {
   StyleSheet,
   Text,
@@ -10,20 +12,28 @@ import {
 import { useFonts } from "expo-font";
 
 export default function Header({
+  socket,
   title = "Älykäs ostoskori",
   profileSource,
   onProfilePress = () => {},
   onLogout = () => {},
 }) {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [profileIcon, setprofileIcon] = useState("");
   const [fontsLoaded] = useFonts({
     JustAnotherHand: require("../assets/fonts/JustAnotherHand-Regular_e324a4054498cee2bae0e36df7910e11.ttf"),
   });
 
   const leftIcon = require("../assets/basket.png");
-  const profileIcon = profileSource
-    ? profileSource
-    : require("../assets/icon.png");
+  
+  //let profileIcon = profileSource
+  //  ? profileSource
+  //  : require("../assets/icon.png");
+  
+    socket.on('profilepic', data => {
+        console.log('receiving pic');
+        setprofileIcon("data:image/png;base64," + data);
+    });
 
   return (
     <View style={styles.header}>
@@ -48,10 +58,10 @@ export default function Header({
           <View style={styles.bar} />
           <View style={styles.bar} />
         </TouchableOpacity>
-
+          {profileIcon && 
         <TouchableOpacity onPress={onProfilePress}>
-          <Image source={profileIcon} style={styles.profile} />
-        </TouchableOpacity>
+          <Image source={{uri: profileIcon}} style={styles.profile} />
+        </TouchableOpacity>}
       </View>
 
       {menuVisible && (
