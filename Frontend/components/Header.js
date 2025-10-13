@@ -32,11 +32,7 @@ export default function Header({
   
     socket.on('profilepic', data => {
         console.log('receiving pic');
-        //const blob = new Blob([data], { type: '[image/png]' });
         setprofileIcon("data:image/png;base64," + data);
-        //var profilepic = new Image();
-        //setprofileIcon = 'data:image/png;base64,' + data;
-        console.log(profileIcon);
     });
 
   return (

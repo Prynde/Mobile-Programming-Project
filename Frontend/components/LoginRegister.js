@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { ServerLoginUser, ServerRegisterUser } from '../serverFunctions';
-import io from "socket.io-client";
 // Komponentti, mikä hallitsee kirjautumisen ja rekisteröitymisen näyttämisen.
 export default function LoginRegister({setCurrentUser, socket}) { 
     const [pressed, setPressed] = useState(false); // Jos false, niin näytetään kirjautumiskomponentti, muuten rekisteröitymiskomponentti.

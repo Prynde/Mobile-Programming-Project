@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
-//import io from "socket.io-client";
-//const socket = io.connect("https://lappis.mau-mooneye.ts.net", { transports: ['websocket'] });
 
 export default function Profile({ setVisibility, socket, currentUser }) {
 

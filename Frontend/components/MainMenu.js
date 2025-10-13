@@ -48,7 +48,6 @@ export default function MainMenu({currentUser, socket}) {
   const handleShownAll = () => {
     setShown(true);
   };
-  // Branch Conflict --> Miika: Tämä näyttäisi uudemmalta koodilta? kts. seuraava Branch Conflict kommentti rivi 77-125
     // Titles of lists are shown. For now also creation dates.
     const renderList = (item) => {
         return (
