@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import {updateList} from '../sqlconnection/db';
 
-export default function ListContent({setVisibility, selectedList}) { 
+export default function ListContent({setVisibility, selectedList, updateNewShoppingListState}) { 
     console.log(selectedList.id)
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("") // Message that is shown.
@@ -39,6 +39,7 @@ export default function ListContent({setVisibility, selectedList}) {
         const newDate = new Date();
         console.log(selectedList.id, title, message, newDate.toISOString())
         updateList(selectedList.id, title, message, newDate.toISOString())
+        updateNewShoppingListState() // From MainMenu.js.
     }
     
     return(

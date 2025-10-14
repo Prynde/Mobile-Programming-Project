@@ -46,7 +46,6 @@ export default function MainMenu({currentUser}) {
   // Updates useState array with content.
   const updateNewShoppingListState = async() => {
     setNewShoppingList(await readAllList(currentUser))
-
   }
 
   // For showing recently made or edited lists.
@@ -74,7 +73,8 @@ export default function MainMenu({currentUser}) {
                 <Modal visible={visibility}>
                     <ListContent 
                       setVisibility={setVisibility} 
-                      selectedList={selectedList} />
+                      selectedList={selectedList} 
+                      updateNewShoppingListState={updateNewShoppingListState}/>
                 </Modal>
             <View style={styles.mainMenuNewList}>
                 <TextInput 
@@ -89,7 +89,6 @@ export default function MainMenu({currentUser}) {
                 >
                     <Text>Luo</Text>
                 </TouchableOpacity>
-                <View style={styles.listStyle}><TouchableOpacity style={styles.buttonNewList} onPress={()=>console.log(shoppingList)}><Text>TESTIdeleteall</Text></TouchableOpacity></View>
             </View>
             <View style={styles.mainMenuSelectList}>
                 <TouchableOpacity 
