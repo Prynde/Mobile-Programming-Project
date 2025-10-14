@@ -43,6 +43,18 @@ export const readAllList = async() => {
     }
 }
 
+// Updates title, message and date of a specific list.
+export const updateList = async(id, title, message, date) => {
+    try {
+        const db = await init();
+        const statement = await db.prepareAsync("UPDATE shoppinglist SET title = $title, message = $message, date = $date WHERE id = $id;");
+        const result = await statement.executeAsync({$title: title, $message: message, $date: date, $id: id});
+        await statement.finalizeAsync();
+    } catch (error) {
+        throw new Error("Error while updating list id: " + id + " error: " + error.message)
+    }
+}
+
 // Removes rows from shoppinglist table.
 export const deleteAllList = async() => {
     try {

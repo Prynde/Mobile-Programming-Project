@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import ListContent from './ListContent';
 import {createList, readAllList, deleteAllList} from '../sqlconnection/db';
@@ -11,6 +11,11 @@ export default function MainMenu({currentUser}) {
     const [selectedList, setSelectedList] = useState()
     const [visibility, setVisibility] = useState(false) // Shows shopping list.
     
+    // On first render all lists are red from local db.
+    useEffect(() => {
+        updateNewShoppingListState();
+    }, []);
+
     // Opens pressed shopping list.
     const handleListContent = (props) => {
         setSelectedList(props)
@@ -34,9 +39,14 @@ export default function MainMenu({currentUser}) {
       };
       // Sends list to database. Reads all lists from database and adds them to useState list.
       await createList(newShoppingList)
-      setNewShoppingList(await readAllList())
+      updateNewShoppingListState()
     }
   };
+
+  // Updates useState array with content.
+  const updateNewShoppingListState = async() => {
+    setNewShoppingList(await readAllList())
+  }
 
   // For showing recently made or edited lists.
   const handleShownFilter = () => {
@@ -116,13 +126,6 @@ export default function MainMenu({currentUser}) {
           </View>
     );
 }
-     
-/*
-          <Text>TÄSTÄ</Text>
-                <TouchableOpacity style={styles.buttonNewList} onPress={db_removeAllList}><Text>POISTO</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.buttonNewList} onPress={db_readAllList}><Text>LUESTATE</Text></TouchableOpacity>
-
-*/
 
 const styles = StyleSheet.create({
   mainMenu: {

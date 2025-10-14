@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {updateList} from '../sqlconnection/db';
 
 export default function ListContent({setVisibility, selectedList}) { 
-    console.log(selectedList)
+    console.log(selectedList.id)
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("") // Message that is shown.
     const [edited, setEdited] = useState(false) // If user have edited message in any way this is changed to true.
@@ -20,23 +21,24 @@ export default function ListContent({setVisibility, selectedList}) {
     const handleTitle = (props) => {
         setEdited(true) // Called every time something is pressee, find a better way?
         setTitle(props)
-        handleSaving()
     }
 
     const handleMessage = (props) => {
         setEdited(true) // Called every time something is pressee, find a better way?
         setMessage(props)
-        handleSaving()
     }
 
     // Saves title and message to the object and updates date if either has been edited.
     const handleSaving = () => {
         if (edited) {
-            selectedList.title = title;
-            selectedList.message = message;
-            const newDate = new Date();
-            selectedList.date = newDate.toISOString();
+            updateNewValues();
         }
+    }
+
+    const updateNewValues = async() => {
+        const newDate = new Date();
+        console.log(selectedList.id, title, message, newDate.toISOString())
+        updateList(selectedList.id, title, message, newDate.toISOString())
     }
     
     return(
@@ -47,7 +49,7 @@ export default function ListContent({setVisibility, selectedList}) {
             </View>
             <View style={styles.subContainer}>
                 <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
-                    <Text>Palaa takaisin</Text>
+                    <Text>Palaa takaisin ja tallenna</Text>
                 </TouchableOpacity>
             </View>
         </View>
