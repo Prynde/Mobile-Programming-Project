@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import ListContent from './ListContent';
-import {createList, readAllList, deleteAllList} from '../sqlconnection/db';
+import {testReadAll, createList, readAllList, deleteAllList} from '../sqlconnection/db';
 
 
 export default function MainMenu({currentUser}) {
@@ -13,7 +13,7 @@ export default function MainMenu({currentUser}) {
     
     // On first render all lists are red from local db.
     useEffect(() => {
-        updateNewShoppingListState();
+        updateNewShoppingListState(); 
     }, []);
 
     // Opens pressed shopping list.
@@ -45,7 +45,8 @@ export default function MainMenu({currentUser}) {
 
   // Updates useState array with content.
   const updateNewShoppingListState = async() => {
-    setNewShoppingList(await readAllList())
+    setNewShoppingList(await readAllList(currentUser))
+
   }
 
   // For showing recently made or edited lists.
@@ -88,6 +89,7 @@ export default function MainMenu({currentUser}) {
                 >
                     <Text>Luo</Text>
                 </TouchableOpacity>
+                <View style={styles.listStyle}><TouchableOpacity style={styles.buttonNewList} onPress={()=>console.log(shoppingList)}><Text>TESTIdeleteall</Text></TouchableOpacity></View>
             </View>
             <View style={styles.mainMenuSelectList}>
                 <TouchableOpacity 

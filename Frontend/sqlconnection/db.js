@@ -13,6 +13,19 @@ export const init = async() => {
     }
 }
 
+export const testReadAll = async(currentUser) => {
+    console.log(currentUser)
+    try {
+        const db = await init();
+        const result = await db.getAllAsync("SELECT * FROM shoppinglist");
+
+        return result.filter((user) => user.owner == currentUser); // Make it database query!
+    } 
+    catch (error) {
+        throw new Error("Error while reading all lists from local db: " + error.message);
+    }
+}
+
 // Adds values to database.
 export const createList = async(newShoppingList) => {
     const owner = newShoppingList.owner
@@ -32,11 +45,11 @@ export const createList = async(newShoppingList) => {
 }
 
 // Returns all lists as objects inside array.
-export const readAllList = async() => {
+export const readAllList = async(currentUser) => {
     try {
         const db = await init();
         const result = await db.getAllAsync("SELECT * FROM shoppinglist");
-        return result;
+        return result.filter((user) => user.owner == currentUser); // Make it database query!
     } 
     catch (error) {
         throw new Error("Error while reading all lists from local db: " + error.message);
