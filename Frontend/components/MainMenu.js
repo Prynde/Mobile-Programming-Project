@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import ListContent from './ListContent';
-import {testReadAll, createList, readAllList, deleteAllList} from '../sqlconnection/db';
+import {createList, readAllList, deleteAllList, deleteList, deleteListTest} from '../sqlconnection/db';
 
 
 export default function MainMenu({currentUser}) {
@@ -48,6 +48,13 @@ export default function MainMenu({currentUser}) {
     setNewShoppingList(await readAllList(currentUser))
   }
 
+  // Removest selected list. Called in ListContent.
+  const deleteSelectedList = async() => {
+    const deleteOne = await deleteList(selectedList.id, currentUser)
+    setNewShoppingList(deleteOne)
+    console.log(deleteOne)
+  }
+
   // For showing recently made or edited lists.
   const handleShownFilter = () => {
     setShown(false);
@@ -56,7 +63,7 @@ export default function MainMenu({currentUser}) {
   const handleShownAll = () => {
     setShown(true);
   };
-  // Branch Conflict --> Miika: Tämä näyttäisi uudemmalta koodilta? kts. seuraava Branch Conflict kommentti rivi 77-125
+
     // Titles of lists are shown. For now also creation dates.
     const renderList = (item) => {
         return (
@@ -74,7 +81,8 @@ export default function MainMenu({currentUser}) {
                     <ListContent 
                       setVisibility={setVisibility} 
                       selectedList={selectedList} 
-                      updateNewShoppingListState={updateNewShoppingListState}/>
+                      updateNewShoppingListState={updateNewShoppingListState}
+                      deleteSelectedList={deleteSelectedList}/>
                 </Modal>
             <View style={styles.mainMenuNewList}>
                 <TextInput 

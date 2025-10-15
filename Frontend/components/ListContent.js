@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import {updateList} from '../sqlconnection/db';
 
-export default function ListContent({setVisibility, selectedList, updateNewShoppingListState}) { 
+export default function ListContent({setVisibility, selectedList, updateNewShoppingListState, deleteSelectedList}) { 
     console.log(selectedList.id)
     const [title, setTitle] = useState("")
     const [message, setMessage] = useState("") // Message that is shown.
@@ -35,6 +35,12 @@ export default function ListContent({setVisibility, selectedList, updateNewShopp
         }
     }
 
+    const handleDelete = () => {
+        setEdited(false)
+        deleteSelectedList()
+        setVisibility(false)
+    }
+
     const updateNewValues = async() => {
         const newDate = new Date();
         console.log(selectedList.id, title, message, newDate.toISOString())
@@ -51,6 +57,9 @@ export default function ListContent({setVisibility, selectedList, updateNewShopp
             <View style={styles.subContainer}>
                 <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
                     <Text>Palaa takaisin ja tallenna</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.buttonInput} onPress={handleDelete}>
+                    <Text>Poista lista</Text>
                 </TouchableOpacity>
             </View>
         </View>

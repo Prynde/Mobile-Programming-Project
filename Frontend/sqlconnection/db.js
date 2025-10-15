@@ -10,20 +10,9 @@ export const init = async() => {
         return db;
     } catch (error) {
         throw new Error("Error while initializing local db.")
-    }
+    } finally {
+    console.log("Init")
 }
-
-export const testReadAll = async(currentUser) => {
-    console.log(currentUser)
-    try {
-        const db = await init();
-        const result = await db.getAllAsync("SELECT * FROM shoppinglist");
-
-        return result.filter((user) => user.owner == currentUser); // Make it database query!
-    } 
-    catch (error) {
-        throw new Error("Error while reading all lists from local db: " + error.message);
-    }
 }
 
 // Adds values to database.
@@ -76,4 +65,25 @@ export const deleteAllList = async() => {
     } catch (error) {
         throw new Error("Error while removing all lists from local db shoppinglist table: " + error.message);
     }
+}
+
+// Removes one list and reeturns the rest.
+export const deleteList = async(listId, currentUser) => {
+    console.log("from db: ", listId, currentUser)
+    //let statement = `DELETE FROM shoppinglist WHERE id=${listId}`
+    try {
+        const db = await init();
+        const statement = await db.prepareAsync("DELETE FROM shoppinglist WHERE id=$id");
+        const result = await statement.executeAsync({$id: listId});
+        await statement.finalizeAsync();
+    } catch (error) {
+        throw new Error("Error while deleting list id: " + listId);
+    } finally {
+        return await readAllList(currentUser)
+    }
+}
+
+export const deleteListTest = async(listId, currentUser) => {
+    console.log("from db: " + listId, currentUser)
+
 }
