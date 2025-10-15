@@ -1,13 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Modal } from "react-native";
 import ListContent from './ListContent';
-import {createList, readAllList, deleteAllList, deleteList, deleteListTest} from '../sqlconnection/db';
+import {createList, readAllList, deleteList} from '../sqlconnection/db';
 
 
-export default function MainMenu({currentUser, socket}) {
+export default function MainMenu({currentUser}) {
     const [newList, setNewList] = useState("");
     const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
-    const [shoppingList, setNewShoppingList] = useState([]);  // For testing without backend!
+    const [shoppingList, setNewShoppingList] = useState([]);  // Saves temporarily lists for showing them on screen.
     const [selectedList, setSelectedList] = useState()
     const [visibility, setVisibility] = useState(false) // Shows shopping list.
     
@@ -40,14 +40,6 @@ export default function MainMenu({currentUser, socket}) {
       // Sends list to database. Reads all lists from database and adds them to useState list.
       await createList(newShoppingList)
       updateNewShoppingListState()
-      // setNewShoppingList([...shoppingList, newShoppingList]); <--- Ei ilmeisesti enää käytössä?
-      /*
-      let data = {
-        username: currentUser,
-        slname: newList.trim()
-      }
-      socket.emit('newsl', data);
-      */
     }
   };
 

@@ -70,7 +70,6 @@ export const deleteAllList = async() => {
 // Removes one list and reeturns the rest.
 export const deleteList = async(listId, currentUser) => {
     console.log("from db: ", listId, currentUser)
-    //let statement = `DELETE FROM shoppinglist WHERE id=${listId}`
     try {
         const db = await init();
         const statement = await db.prepareAsync("DELETE FROM shoppinglist WHERE id=$id");
@@ -81,9 +80,4 @@ export const deleteList = async(listId, currentUser) => {
     } finally {
         return await readAllList(currentUser)
     }
-}
-
-export const deleteListTest = async(listId, currentUser) => {
-    console.log("from db: " + listId, currentUser)
-
 }
