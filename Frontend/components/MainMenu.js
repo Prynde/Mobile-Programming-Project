@@ -77,7 +77,7 @@ export default function MainMenu({currentUser}) {
 
     return(
         <View style={styles.mainMenu}>
-                <Modal visible={visibility}>
+                <Modal visible={visibility} transparent={true}>
                     <ListContent 
                       setVisibility={setVisibility} 
                       selectedList={selectedList} 
