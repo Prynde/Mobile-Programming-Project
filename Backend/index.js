@@ -20,6 +20,8 @@ mongoose.connect(dbURI)
     });
 
 const User = require('./models/user');
+const Shoppinglist = require('./models/shoppinglist');
+
 var bcryptpw;
 
 async function hashpw(password) {
@@ -50,27 +52,34 @@ io.on('connection', function (socket) {
 
     socket.on("authentication", async (data, callback) => {
         if (data.username == '' || data.password == '') {
-            return callback(new Error("No username or password given"));
+            socket.emit('unauthorized', {message: "No username or password given"});
         };
         const user = await User.findOne({ username: data.username });
 
         if (data.register) { // register new user if true
             if (user) {
-                return callback(new Error("User already exists"));
+                socket.emit('unauthorized', {message: "User already exists"});
             } else {
                 await hashpw(data.password); // hash the password
                 const user = await User.create({ username: data.username, password: bcryptpw });
-                io.emit("registered", { message: data.username })
+                socket.emit("registered", { message: data.username })
             }
         } else { // else attempt to login
             if (!user) {
-                return callback(new Error("User not found")); // -> client.emit("unauthorized")...
+                socket.emit('unauthorized', {message: "User not found"}); // -> client.emit("unauthorized")...
             } else if (!bcrypt.compareSync(data.password, user.password)) {
-                return callback(new Error("Authentication failure"));
+                socket.emit('unauthorized', {message: "Authentication failure"});
             } else {
                 users[data.username] = socket.id;
                 console.log(users[data.username]);
                 socket.emit("loggedIn", { message: "Logged in succesfully.", sessionID: socket.id })
+                if (user.profilepic) {
+                    const profilepic = fs.readFileSync(user.profilepic);
+                    socket.emit('profilepic', profilepic.toString('base64'));
+                } else {
+                    const profilepic = fs.readFileSync('./images/icon.png');
+                    socket.emit('profilepic', profilepic.toString('base64'));
+                };
             };
         };
     });
@@ -102,17 +111,19 @@ io.on('connection', function (socket) {
             io.emit("pwcanswer", {status: "Vanha salasa on väärin"});
         };
 }});
-    socket.on("upload", async (buffer) => {
-        console.log("upload");
-        //console.log(file);
-        //console.log(file);
-        //let image = atob(file.content);
-        fs.writeFile("./images/test.png", buffer, (err) => {
-            console.log({ message: err ? "failure" : "success" });
+    socket.on("upload", async (data) => {
+console.log(data.name);
+        fs.writeFile("./images/" + data.name, data.buffer, 'base64', (err) => {
+           console.log({ message: err ? "failure" : "success" });
         });
-        let path = './images/'; // Find the filename...
-        // const user = await User.updateOne({ username: data.username }, { profilepic: path });
+        let path = './images/' + data.name;
+        const user = await User.updateOne({ username: data.username }, { profilepic: path });
 
+    });
+    socket.on('newsl', async (data) => {
+        if (!data.slname == '') {
+            const shoppinglist = await Shoppinglist.create({owner: data.username, name: data.slname});
+        }
     });
 });
 
