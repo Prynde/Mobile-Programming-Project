@@ -24,7 +24,7 @@ const Shoppinglist = require('./models/shoppinglist');
 
 var bcryptpw;
 
-async function hashpw(password) {
+async function hashpw(password) { // Kryptaa salasana
     const saltRounds = 10;
     await new Promise((resolve) => {
         bcrypt.genSalt(saltRounds, (err, salt) => {
@@ -50,15 +50,15 @@ var users = new Object();
 io.on('connection', function (socket) {
     console.log('client connected on websocket');
 
-    socket.on("authentication", async (data, callback) => {
+    socket.on("authentication", async (data, callback) => { // Sisäänkirjautuminen
         if (data.username == '' || data.password == '') {
-            socket.emit('unauthorized', {message: "No username or password given"});
+            socket.emit('unauthorized', { message: "No username or password given" });
         };
         const user = await User.findOne({ username: data.username });
 
         if (data.register) { // register new user if true
             if (user) {
-                socket.emit('unauthorized', {message: "User already exists"});
+                socket.emit('unauthorized', { message: "User already exists" });
             } else {
                 await hashpw(data.password); // hash the password
                 const user = await User.create({ username: data.username, password: bcryptpw });
@@ -66,14 +66,14 @@ io.on('connection', function (socket) {
             }
         } else { // else attempt to login
             if (!user) {
-                socket.emit('unauthorized', {message: "User not found"}); // -> client.emit("unauthorized")...
+                socket.emit('unauthorized', { message: "User not found" });
             } else if (!bcrypt.compareSync(data.password, user.password)) {
-                socket.emit('unauthorized', {message: "Authentication failure"});
+                socket.emit('unauthorized', { message: "Authentication failure" });
             } else {
                 users[data.username] = socket.id;
                 console.log(users[data.username]);
                 socket.emit("loggedIn", { message: "Logged in succesfully.", sessionID: socket.id })
-                if (user.profilepic) {
+                if (user.profilepic) { // Profiilikuvan lähetys appiin
                     const profilepic = fs.readFileSync(user.profilepic);
                     socket.emit('profilepic', profilepic.toString('base64'));
                 } else {
@@ -84,45 +84,47 @@ io.on('connection', function (socket) {
         };
     });
 
-    socket.on("logintest", (data) => { if (users[data.username] == socket.id) { console.log("testok") } else {console.log(socket.id)} });
+    socket.on("logintest", (data) => { if (users[data.username] == socket.id) { console.log("testok") } else { console.log(socket.id) } });
 
     // Password change
     socket.on("pwchange", async (data) => {
         if (users[data.username] == socket.id) {
-        if (data.oldpassword == '' || data.password == '' || data.password2 == '') {
-                    console.log(data);
-            io.emit("pwcanswer", {status: "Tyhjä kenttä"});
-            return;
-        };
-        if (data.oldpassword == data.password) {
-            io.emit("pwcanswer", { status: "Vanha ja uusi salasana ovat identtisiä." });
-            return;
-        };
-        const user = await User.findOne({ username: data.username });
-        if (bcrypt.compareSync(data.oldpassword, user.password)) {
-            if (data.password == data.password2) {
-                await hashpw(data.password); // hash the password
-                const user = await User.updateOne({ username: data.username }, { password: bcryptpw });
-                io.emit("pwcanswer", { status: "Salasana vaihdettu" })
-            } else {
-                io.emit("pwcanswer", { status: "New password-fields do not match" });
+            if (data.oldpassword == '' || data.password == '' || data.password2 == '') {
+                console.log(data);
+                io.emit("pwcanswer", { status: "Tyhjä kenttä" });
+                return;
             };
-        } else {
-            io.emit("pwcanswer", {status: "Vanha salasa on väärin"});
-        };
-}});
-    socket.on("upload", async (data) => {
-console.log(data.name);
+            if (data.oldpassword == data.password) {
+                io.emit("pwcanswer", { status: "Vanha ja uusi salasana ovat identtisiä." });
+                return;
+            };
+            const user = await User.findOne({ username: data.username });
+            if (bcrypt.compareSync(data.oldpassword, user.password)) {
+                if (data.password == data.password2) {
+                    await hashpw(data.password); // hash the password
+                    const user = await User.updateOne({ username: data.username }, { password: bcryptpw });
+                    io.emit("pwcanswer", { status: "Salasana vaihdettu" })
+                } else {
+                    io.emit("pwcanswer", { status: "New password-fields do not match" });
+                };
+            } else {
+                io.emit("pwcanswer", { status: "Vanha salasa on väärin" });
+            };
+        }
+    });
+    socket.on("upload", async (data) => { // Profiilikuvan tallennus
+        console.log(data.name);
         fs.writeFile("./images/" + data.name, data.buffer, 'base64', (err) => {
-           console.log({ message: err ? "failure" : "success" });
+            console.log({ message: err ? "failure" : "success" });
         });
         let path = './images/' + data.name;
         const user = await User.updateOne({ username: data.username }, { profilepic: path });
 
     });
+    // Tallenna uusi lista tietokantaan
     socket.on('newsl', async (data) => {
         if (!data.slname == '') {
-            const shoppinglist = await Shoppinglist.create({owner: data.username, name: data.slname});
+            const shoppinglist = await Shoppinglist.create({ owner: data.username, name: data.slname });
         }
     });
 });
