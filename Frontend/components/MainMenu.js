@@ -4,7 +4,7 @@ import ListContent from './ListContent';
 import {createList, readAllList, deleteList} from '../sqlconnection/db';
 
 
-export default function MainMenu({currentUser}) {
+export default function MainMenu({currentUser, socket}) {
     const [newList, setNewList] = useState("");
     const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
     const [shoppingList, setNewShoppingList] = useState([]);  // Saves temporarily lists for showing them on screen.
@@ -40,6 +40,7 @@ export default function MainMenu({currentUser}) {
       // Sends list to database. Reads all lists from database and adds them to useState list.
       await createList(newShoppingList)
       updateNewShoppingListState()
+      socket.emit("newsl",newShoppingList); // Tallenna uusi lista Mongoon.
     }
   };
 
@@ -52,6 +53,7 @@ export default function MainMenu({currentUser}) {
   const deleteSelectedList = async() => {
     const deleteOne = await deleteList(selectedList.id, currentUser)
     setNewShoppingList(deleteOne)
+    socket.emit("deletesl", {list: selectedList, owner: currentUser}); // Poista lista Mongosta
     console.log(deleteOne)
   }
 

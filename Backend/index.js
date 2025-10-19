@@ -123,9 +123,11 @@ io.on('connection', function (socket) {
     });
     // Tallenna uusi lista tietokantaan
     socket.on('newsl', async (data) => {
-        if (!data.slname == '') {
-            const shoppinglist = await Shoppinglist.create({ owner: data.username, name: data.slname });
-        }
+            const shoppinglist = await Shoppinglist.create({ owner: data.owner, name: data.title });
+    });
+    // Poista lista tietokannasta
+    socket.on('deletesl', async (data) => {
+        console.log(data);
     });
 });
 

@@ -15,7 +15,7 @@ export default function Profile({ setVisibility, socket, currentUser }) {
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
-            allowsEditing: false,
+            allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
             base64: true
@@ -29,9 +29,10 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
     const camera = async () => {
         result = await ImagePicker.launchCameraAsync({
-            allowsEditing: false,
+            allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
+            base64: true
         });
         console.log(result);
 
