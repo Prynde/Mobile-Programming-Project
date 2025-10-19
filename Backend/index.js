@@ -161,12 +161,28 @@ io.on("connection", function (socket) {
     );
   });
   // Tallenna uusi lista tietokantaan
-  socket.on("newsl", async (data) => {
-    if (!data.slname == "") {
-      const shoppinglist = await Shoppinglist.create({
-        owner: data.username,
-        name: data.slname,
-      });
+  // socket.on('newsl', async (data) => {
+  //     if (!data.slname == '') {
+  //         const shoppinglist = await Shoppinglist.create({ owner: data.username, name: data.slname });
+  //     }
+  // });
+
+  // Tallenna uusi lista tietokantaan (Saara)
+  socket.on("newsl", async (data, callback) => {
+    if (data.slname && data.username) {
+      try {
+        const shoppinglist = await Shoppinglist.create({
+          owner: data.username,
+          name: data.slname,
+          date: data.date || Date.now(),
+        });
+        callback({ success: true, list: shoppinglist });
+        console.log("success", shoppinglist);
+      } catch (err) {
+        callback({ success: false, error: err.message });
+      }
+    } else {
+      callback({ success: false, error: "Missing username or list name" });
     }
   });
 });
