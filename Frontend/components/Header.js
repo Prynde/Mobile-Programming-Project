@@ -31,8 +31,8 @@ export default function Header({
   //  : require("../assets/icon.png");
   
     socket.on('profilepic', data => {
-        console.log('receiving pic');
-        setprofileIcon("data:image/png;base64," + data);
+        console.log('receiving pic: ' + data.ext);
+        setprofileIcon("data:image/" + data.ext + ";base64," + data.buffer);
     });
 
   return (

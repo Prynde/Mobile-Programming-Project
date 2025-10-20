@@ -1,85 +1,112 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const httpServer = require("http").createServer(app);
-var io = require('socket.io')(httpServer);
-const mongoose = require('mongoose');
+var io = require("socket.io")(httpServer);
+const mongoose = require("mongoose");
 // const socketioAuth = require("socketio-auth");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const fs = require("fs");
 
-const dbURI = 'mongodb+srv://' + process.env.DBUSERNAME + ':' + process.env.DBPASSWORD + '@' + process.env.CLUSTER + '.c7byj1n.mongodb.net/' + process.env.DB + '?retryWrites=true&w=majority&appName=Hamk-projects';
+const dbURI =
+  "mongodb+srv://" +
+  process.env.DBUSERNAME +
+  ":" +
+  process.env.DBPASSWORD +
+  "@" +
+  process.env.CLUSTER +
+  ".c7byj1n.mongodb.net/" +
+  process.env.DB +
+  "?retryWrites=true&w=majority&appName=Hamk-projects";
 
-mongoose.connect(dbURI)
-    .then((result) => {
-        console.log('Connected to the DB');
-    })
-    .catch((err) => {
-        console.log(err);
-    });
+mongoose
+  .connect(dbURI)
+  .then((result) => {
+    console.log("Connected to the DB");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
-const User = require('./models/user');
-const Shoppinglist = require('./models/shoppinglist');
+const User = require("./models/user");
+const Shoppinglist = require("./models/shoppinglist");
 
 var bcryptpw;
 
-async function hashpw(password) { // Kryptaa salasana
-    const saltRounds = 10;
-    await new Promise((resolve) => {
-        bcrypt.genSalt(saltRounds, (err, salt) => {
-            if (err) {
-                // Handle error
-                return;
-            }
-            // Salt generation successful, proceed to hash the password
+async function hashpw(password) {
+  // Kryptaa salasana
+  const saltRounds = 10;
+  await new Promise((resolve) => {
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+      if (err) {
+        // Handle error
+        return;
+      }
+      // Salt generation successful, proceed to hash the password
 
-            bcrypt.hash(password, salt, (err, hash) => {
-                if (err) {
-                    // Handle error
-                    return;
-                }
-                resolve(bcryptpw = hash); // return hashed password
-            });
-        });
+      bcrypt.hash(password, salt, (err, hash) => {
+        if (err) {
+          // Handle error
+          return;
+        }
+        resolve((bcryptpw = hash)); // return hashed password
+      });
     });
-};
+  });
+}
+
+
 
 var users = new Object();
 
-io.on('connection', function (socket) {
-    console.log('client connected on websocket');
+io.on("connection", function (socket) {
+  console.log("client connected on websocket");
 
-    socket.on("authentication", async (data, callback) => { // Sisäänkirjautuminen
-        if (data.username == '' || data.password == '') {
-            socket.emit('unauthorized', { message: "No username or password given" });
-        };
-        const user = await User.findOne({ username: data.username });
+function updateProfilePic (user) {
+        if (user.profilepic) {
+          // Profiilikuvan lähetys appiin
+          const profilepic = fs.readFileSync(user.profilepic);
+          const ext = user.profilepic.slice(user.profilepic.lastIndexOf(".") + 1);
+          socket.emit("profilepic", {ext: ext, buffer: profilepic.toString("base64")});
+        } else {
+          const profilepic = fs.readFileSync("./images/icon.png");
+          socket.emit("profilepic", {ext: 'png', buffer: profilepic.toString("base64")});
+        }
+};
 
-        if (data.register) { // register new user if true
-            if (user) {
-                socket.emit('unauthorized', { message: "User already exists" });
-            } else {
-                await hashpw(data.password); // hash the password
-                const user = await User.create({ username: data.username, password: bcryptpw });
-                socket.emit("registered", { message: data.username })
-            }
-        } else { // else attempt to login
-            if (!user) {
-                socket.emit('unauthorized', { message: "User not found" });
-            } else if (!bcrypt.compareSync(data.password, user.password)) {
-                socket.emit('unauthorized', { message: "Authentication failure" });
-            } else {
-                users[data.username] = socket.id;
-                console.log(users[data.username]);
-                socket.emit("loggedIn", { message: "Logged in succesfully.", sessionID: socket.id })
-                if (user.profilepic) { // Profiilikuvan lähetys appiin
-                    const profilepic = fs.readFileSync(user.profilepic);
-                    socket.emit('profilepic', profilepic.toString('base64'));
-                } else {
-                    const profilepic = fs.readFileSync('./images/icon.png');
-                    socket.emit('profilepic', profilepic.toString('base64'));
-                };
+  socket.on("authentication", async (data, callback) => {    // Sisäänkirjautuminen
+    if (data.username == "" || data.password == "") {
+      socket.emit("unauthorized", { message: "No username or password given" });
+    }
+    const user = await User.findOne({ username: data.username });
+
+    if (data.register) {
+      // register new user if true
+      if (user) {
+        socket.emit("unauthorized", { message: "User already exists" });
+      } else {
+        await hashpw(data.password); // hash the password
+        const user = await User.create({
+          username: data.username,
+          password: bcryptpw,
+        });
+        socket.emit("registered", { message: data.username });
+      }
+    } else {
+      // else attempt to login
+      if (!user) {
+        socket.emit("unauthorized", { message: "User not found" });
+      } else if (!bcrypt.compareSync(data.password, user.password)) {
+        socket.emit("unauthorized", { message: "Authentication failure" });
+      } else {
+        users[data.username] = socket.id;
+        console.log(users[data.username]);
+        socket.emit("loggedIn", {
+          message: "Logged in succesfully.",
+          sessionID: socket.id,
+     });
+                updateProfilePic(user);
             };
         };
     });
@@ -112,25 +139,52 @@ io.on('connection', function (socket) {
             };
         }
     });
-    socket.on("upload", async (data) => { // Profiilikuvan tallennus
-        console.log(data.name);
-        fs.writeFile("./images/" + data.name, data.buffer, 'base64', (err) => {
-            console.log({ message: err ? "failure" : "success" });
-        });
-        let path = './images/' + data.name;
-        const user = await User.updateOne({ username: data.username }, { profilepic: path });
+    socket.on("upload", async (data) => {
+    // Profiilikuvan tallennus
+    console.log(data.name);
+    fs.writeFile("./images/" + data.name, data.buffer, "base64", (err) => {
+      console.log({ message: err ? "failure" : "success" });
+    });
+    let path = "./images/" + data.name;
+    const user = await User.updateOne(
+      { username: data.username },
+      { profilepic: path }
+    );
+    updateProfilePic({profilepic: path});
+  });
 
-    });
-    // Tallenna uusi lista tietokantaan
-    socket.on('newsl', async (data) => {
-            const shoppinglist = await Shoppinglist.create({ owner: data.owner, name: data.title });
-    });
     // Poista lista tietokannasta
     socket.on('deletesl', async (data) => {
         console.log(data);
     });
-});
 
+   
+  // Tallenna uusi lista tietokantaan
+  // socket.on('newsl', async (data) => {
+  //     if (!data.slname == '') {
+  //         const shoppinglist = await Shoppinglist.create({ owner: data.username, name: data.slname });
+  //     }
+  // });
+
+  // Tallenna uusi lista tietokantaan (Saara)
+  socket.on("newsl", async (data, callback) => {
+    if (data.slname && data.username) {
+      try {
+        const shoppinglist = await Shoppinglist.create({
+          owner: data.username,
+          name: data.slname,
+          date: data.date || Date.now(),
+        });
+        callback({ success: true, list: shoppinglist });
+        console.log("success", shoppinglist);
+      } catch (err) {
+        callback({ success: false, error: err.message });
+      }
+    } else {
+      callback({ success: false, error: "Missing username or list name" });
+    }
+  });
+});
 
 /*
 const authenticate = async (client, data, callback) => {
@@ -204,7 +258,6 @@ const postAuthenticate = async (client, data, callback) => {
 */
 
 // socketioAuth(io, { authenticate, postAuthenticate, timeout: "10000000" });
-
 
 const PORT = process.env.PORT || 3300;
 httpServer.listen(PORT, () => console.log(`App listening on port ${PORT}`));

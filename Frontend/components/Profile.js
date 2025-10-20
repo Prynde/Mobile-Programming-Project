@@ -6,14 +6,14 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
     let [image, setImage] = useState("");
     let [pwcResult, setPwcResult] = useState('');
-    let result = '';
+    let result = [];
     const handleProfile = () => {
         setVisibility(false)
     };
     
 
     const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
+        result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
@@ -24,6 +24,7 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
+            upload(result);
         };
     };
 
@@ -34,10 +35,11 @@ export default function Profile({ setVisibility, socket, currentUser }) {
             quality: 1,
             base64: true
         });
-        console.log(result);
+        
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);
+            upload(result);
         };
     };
 
@@ -87,9 +89,6 @@ export default function Profile({ setVisibility, socket, currentUser }) {
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.buttonInput} onPress={camera}>
                     <Text>Käytä kameraa</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonInput} onPress={upload}>
-                    <Text>Tallenna profiilikuvana</Text>
                 </TouchableOpacity>
                 {image && <Image source={{ uri: image }} style={styles.image} />}
             </View>
