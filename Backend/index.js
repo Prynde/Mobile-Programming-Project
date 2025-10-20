@@ -56,10 +56,24 @@ async function hashpw(password) {
   });
 }
 
+
+
 var users = new Object();
 
 io.on("connection", function (socket) {
   console.log("client connected on websocket");
+
+function updateProfilePic (user) {
+        if (user.profilepic) {
+          // Profiilikuvan lähetys appiin
+          const profilepic = fs.readFileSync(user.profilepic);
+          const ext = user.profilepic.slice(user.profilepic.lastIndexOf(".") + 1);
+          socket.emit("profilepic", {ext: ext, buffer: profilepic.toString("base64")});
+        } else {
+          const profilepic = fs.readFileSync("./images/icon.png");
+          socket.emit("profilepic", {ext: 'png', buffer: profilepic.toString("base64")});
+        }
+};
 
   socket.on("authentication", async (data, callback) => {
     // Sisäänkirjautuminen
@@ -93,14 +107,7 @@ io.on("connection", function (socket) {
           message: "Logged in succesfully.",
           sessionID: socket.id,
         });
-        if (user.profilepic) {
-          // Profiilikuvan lähetys appiin
-          const profilepic = fs.readFileSync(user.profilepic);
-          socket.emit("profilepic", profilepic.toString("base64"));
-        } else {
-          const profilepic = fs.readFileSync("./images/icon.png");
-          socket.emit("profilepic", profilepic.toString("base64"));
-        }
+        updateProfilePic(user);
       }
     }
   });
@@ -159,6 +166,7 @@ io.on("connection", function (socket) {
       { username: data.username },
       { profilepic: path }
     );
+    updateProfilePic({profilepic: path});
   });
   // Tallenna uusi lista tietokantaan
   // socket.on('newsl', async (data) => {
