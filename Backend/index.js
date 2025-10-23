@@ -56,13 +56,26 @@ async function hashpw(password) {
   });
 }
 
+
+
 var users = new Object();
 
 io.on("connection", function (socket) {
   console.log("client connected on websocket");
 
-  socket.on("authentication", async (data, callback) => {
-    // Sisäänkirjautuminen
+function updateProfilePic (user) {
+        if (user.profilepic) {
+          // Profiilikuvan lähetys appiin
+          const profilepic = fs.readFileSync(user.profilepic);
+          const ext = user.profilepic.slice(user.profilepic.lastIndexOf(".") + 1);
+          socket.emit("profilepic", {ext: ext, buffer: profilepic.toString("base64")});
+        } else {
+          const profilepic = fs.readFileSync("./images/icon.png");
+          socket.emit("profilepic", {ext: 'png', buffer: profilepic.toString("base64")});
+        }
+};
+
+  socket.on("authentication", async (data, callback) => {    // Sisäänkirjautuminen
     if (data.username == "" || data.password == "") {
       socket.emit("unauthorized", { message: "No username or password given" });
     }
@@ -92,63 +105,41 @@ io.on("connection", function (socket) {
         socket.emit("loggedIn", {
           message: "Logged in succesfully.",
           sessionID: socket.id,
-        });
-        if (user.profilepic) {
-          // Profiilikuvan lähetys appiin
-          const profilepic = fs.readFileSync(user.profilepic);
-          socket.emit("profilepic", profilepic.toString("base64"));
-        } else {
-          const profilepic = fs.readFileSync("./images/icon.png");
-          socket.emit("profilepic", profilepic.toString("base64"));
-        }
-      }
-    }
-  });
+     });
+                updateProfilePic(user);
+            };
+        };
+    });
 
-  socket.on("logintest", (data) => {
-    if (users[data.username] == socket.id) {
-      console.log("testok");
-    } else {
-      console.log(socket.id);
-    }
-  });
+    socket.on("logintest", (data) => { if (users[data.username] == socket.id) { console.log("testok") } else { console.log(socket.id) } });
 
-  // Password change
-  socket.on("pwchange", async (data) => {
-    if (users[data.username] == socket.id) {
-      if (
-        data.oldpassword == "" ||
-        data.password == "" ||
-        data.password2 == ""
-      ) {
-        console.log(data);
-        io.emit("pwcanswer", { status: "Tyhjä kenttä" });
-        return;
-      }
-      if (data.oldpassword == data.password) {
-        io.emit("pwcanswer", {
-          status: "Vanha ja uusi salasana ovat identtisiä.",
-        });
-        return;
-      }
-      const user = await User.findOne({ username: data.username });
-      if (bcrypt.compareSync(data.oldpassword, user.password)) {
-        if (data.password == data.password2) {
-          await hashpw(data.password); // hash the password
-          const user = await User.updateOne(
-            { username: data.username },
-            { password: bcryptpw }
-          );
-          io.emit("pwcanswer", { status: "Salasana vaihdettu" });
-        } else {
-          io.emit("pwcanswer", { status: "New password-fields do not match" });
+    // Password change
+    socket.on("pwchange", async (data) => {
+        if (users[data.username] == socket.id) {
+            if (data.oldpassword == '' || data.password == '' || data.password2 == '') {
+                console.log(data);
+                io.emit("pwcanswer", { status: "Tyhjä kenttä" });
+                return;
+            };
+            if (data.oldpassword == data.password) {
+                io.emit("pwcanswer", { status: "Vanha ja uusi salasana ovat identtisiä." });
+                return;
+            };
+            const user = await User.findOne({ username: data.username });
+            if (bcrypt.compareSync(data.oldpassword, user.password)) {
+                if (data.password == data.password2) {
+                    await hashpw(data.password); // hash the password
+                    const user = await User.updateOne({ username: data.username }, { password: bcryptpw });
+                    io.emit("pwcanswer", { status: "Salasana vaihdettu" })
+                } else {
+                    io.emit("pwcanswer", { status: "New password-fields do not match" });
+                };
+            } else {
+                io.emit("pwcanswer", { status: "Vanha salasa on väärin" });
+            };
         }
-      } else {
-        io.emit("pwcanswer", { status: "Vanha salasa on väärin" });
-      }
-    }
-  });
-  socket.on("upload", async (data) => {
+    });
+    socket.on("upload", async (data) => {
     // Profiilikuvan tallennus
     console.log(data.name);
     fs.writeFile("./images/" + data.name, data.buffer, "base64", (err) => {
@@ -159,7 +150,15 @@ io.on("connection", function (socket) {
       { username: data.username },
       { profilepic: path }
     );
+    updateProfilePic({profilepic: path});
   });
+
+    // Poista lista tietokannasta
+    socket.on('deletesl', async (data) => {
+        console.log(data);
+    });
+
+   
   // Tallenna uusi lista tietokantaan
   // socket.on('newsl', async (data) => {
   //     if (!data.slname == '') {

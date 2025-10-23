@@ -15,7 +15,7 @@ import { createList, readAllList, deleteList } from "../sqlconnection/db";
 import { socket, sendListToServer } from "../socket";
 import Toast from "react-native-toast-message";
 
-export default function MainMenu({ currentUser }) {
+export default function MainMenu({ currentUser /*socket*/ }) {
   const [newList, setNewList] = useState("");
   const [offlineMode, setOfflineMode] = useState(false);
   const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
