@@ -8,10 +8,12 @@ import {
   FlatList,
   Modal,
   Switch,
+  Alert,
 } from "react-native";
 import ListContent from "./ListContent";
 import { createList, readAllList, deleteList } from "../sqlconnection/db";
 import { socket, sendListToServer } from "../socket";
+import Toast from "react-native-toast-message";
 
 export default function MainMenu({ currentUser }) {
   const [newList, setNewList] = useState("");
@@ -105,10 +107,28 @@ export default function MainMenu({ currentUser }) {
           "Lista tallennettu paikalliseen SQLite-tietokantaan:",
           newShoppingList
         );
+        // Alert.alert(
+        //   "Tallennettu",
+        //   "Lista tallennettiin paikalliseen tietokantaan."
+        // );
+        Toast.show({
+          type: "success",
+          text1: "Lista tallennettu offline-tilassa ✅",
+          text2: newShoppingList.title,
+        });
       } else {
         // ONLINE: MongoDB
         if (!socket || !socket.connected) {
           console.warn("Ei yhteyttä palvelimeen.");
+          // Alert.alert(
+          //   "Virhe",
+          //   "Ei yhteyttä palvelimeen, yritä myöhemmin uudelleen."
+          // );
+          Toast.show({
+            type: "error",
+            text1: "Ei yhteyttä palvelimeen ❌",
+            text2: "Yritä myöhemmin uudelleen.",
+          });
           return; // Lopetetaan funktio tähän
         }
 
@@ -119,9 +139,21 @@ export default function MainMenu({ currentUser }) {
         })
           .then((response) => {
             console.log("Lista lähetetty MongoDB-palvelimelle:", response.list);
+            // Alert.alert("Onnistui", "Lista tallennettiin palvelimelle.");
+            Toast.show({
+              type: "success",
+              text1: "Lista tallennettu palvelimelle ✅",
+              text2: newShoppingList.title,
+            });
           })
           .catch((error) => {
             console.error("Virhe listan lähetyksessä:", error);
+            // Alert.alert("Virhe", "Listan lähetys palvelimelle epäonnistui.");
+            Toast.show({
+              type: "error",
+              text1: "Virhe listan luonnissa ⚠️",
+              text2: error.message || "Tuntematon virhe",
+            });
           });
       }
 
