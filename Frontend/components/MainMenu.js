@@ -243,9 +243,7 @@ export default function MainMenu({ currentUser /*socket*/ }) {
                   style={styles.listItemStyle}
                   onPress={() => handleListContent(item)}
                 >
-                  <Text>
-                    {item.title} {item.date}
-                  </Text>
+                  <Text>{item.name}</Text>
                 </TouchableOpacity>
               )}
             />
