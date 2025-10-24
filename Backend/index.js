@@ -18,7 +18,6 @@ const dbURI =
   process.env.CLUSTER +
   ".c7byj1n.mongodb.net/" +
   process.env.DB +
-  //"?retryWrites=true&w=majority&appName=Hamk-projects";
   "?retryWrites=true&w=majority&appName=Hamk-projects";
 
 mongoose
