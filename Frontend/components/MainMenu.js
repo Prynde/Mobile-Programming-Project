@@ -237,7 +237,7 @@ export default function MainMenu({ currentUser /*socket*/ }) {
             <Text style={styles.modalTitle}>Yksityiset ostoslistat</Text>
             <FlatList
               data={privateLists}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item._id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={styles.listItemStyle}
@@ -298,7 +298,6 @@ export default function MainMenu({ currentUser /*socket*/ }) {
           onPress={() => {
             fetchPrivateLists(); // tämä hakee MongoDB:stä
             setPrivateModalVisible(true); // avaa modaalin
-            alert("Jee");
           }}
         >
           <Text>Ostoslistat</Text>
