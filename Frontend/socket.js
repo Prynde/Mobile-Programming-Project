@@ -53,4 +53,14 @@ const sendListToServer = (list) => {
   });
 };
 
-export { socket, sendListToServer };
+const getListsFromServer = (username) => {
+  return new Promise((resolve, reject) => {
+    console.log("Socket status:", socket.connected);
+    socket.emit("getLists", { username }, (response) => {
+      if (response?.success) resolve(response.lists);
+      else reject(response?.error || "Tuntematon virhe");
+    });
+  });
+};
+
+export { socket, sendListToServer, getListsFromServer };

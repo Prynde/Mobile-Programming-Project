@@ -13,6 +13,7 @@ import {
 import ListContent from "./ListContent";
 import { createList, readAllList, deleteList } from "../sqlconnection/db";
 import { socket, sendListToServer } from "../socket";
+import { getListsFromServer } from "../socket";
 import Toast from "react-native-toast-message";
 
 export default function MainMenu({ currentUser /*socket*/ }) {
@@ -22,6 +23,9 @@ export default function MainMenu({ currentUser /*socket*/ }) {
   const [shoppingList, setNewShoppingList] = useState([]); // Saves temporarily lists for showing them on screen.
   const [selectedList, setSelectedList] = useState();
   const [visibility, setVisibility] = useState(false); // Shows shopping list.
+
+  const [privateModalVisible, setPrivateModalVisible] = useState(false);
+  const [privateLists, setPrivateLists] = useState([]);
 
   // On first render all lists are red from local db.
   useEffect(() => {
@@ -36,6 +40,21 @@ export default function MainMenu({ currentUser /*socket*/ }) {
 
   const handleNewList = (props) => {
     setNewList(props);
+  };
+
+  const fetchPrivateLists = async () => {
+    try {
+      const lists = await getListsFromServer(currentUser);
+      console.log("Haetut listat:", lists);
+      setPrivateLists(lists);
+    } catch (error) {
+      console.error("Virhe yksityisten listojen haussa:", error);
+      Toast.show({
+        type: "error",
+        text1: "Virhe haettaessa listoja ❌",
+        text2: error.toString(),
+      });
+    }
   };
 
   // Makes new object which are rendered. Also handles sending list to database and adding it to useState list.
@@ -210,6 +229,36 @@ export default function MainMenu({ currentUser /*socket*/ }) {
           deleteSelectedList={deleteSelectedList}
         />
       </Modal>
+
+      {/* MODAALI: Yksityiset ostoslistat */}
+      <Modal visible={privateModalVisible} transparent={true}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Yksityiset ostoslistat</Text>
+            <FlatList
+              data={privateLists}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.listItemStyle}
+                  onPress={() => handleListContent(item)}
+                >
+                  <Text>
+                    {item.title} {item.date}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setPrivateModalVisible(false)}
+            >
+              <Text>Sulje</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.mainMenuNewList}>
         <TextInput
           placeholder="Uusi ostoslista"
@@ -244,6 +293,16 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         </TouchableOpacity>
       </View>
       <View style={styles.mainMenuSelectList}>
+        <TouchableOpacity
+          style={styles.buttonInput}
+          onPress={() => {
+            fetchPrivateLists(); // tämä hakee MongoDB:stä
+            setPrivateModalVisible(true); // avaa modaalin
+            alert("Jee");
+          }}
+        >
+          <Text>Ostoslistat</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.buttonInput}
           onPress={handleShownFilter}
@@ -382,5 +441,31 @@ const styles = StyleSheet.create({
   offlineSwitchContainer: {
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  closeButton: {
+    marginTop: 10,
+    alignSelf: "center",
+    padding: 10,
+    backgroundColor: "#ddd",
+    borderRadius: 5,
   },
 });
