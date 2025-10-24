@@ -16,6 +16,7 @@
     "react": "19.1.0",
     "react-image-file-resizer": "^0.4.8",
     "react-native": "0.81.4",
+    "react-native-toast-message": "^2.3.3",
     "socket.io-client": "^4.8.1"
   },
   "private": true

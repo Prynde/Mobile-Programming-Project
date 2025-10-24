@@ -56,26 +56,31 @@ async function hashpw(password) {
   });
 }
 
-
-
 var users = new Object();
 
 io.on("connection", function (socket) {
   console.log("client connected on websocket");
 
-function updateProfilePic (user) {
-        if (user.profilepic) {
-          // Profiilikuvan lähetys appiin
-          const profilepic = fs.readFileSync(user.profilepic);
-          const ext = user.profilepic.slice(user.profilepic.lastIndexOf(".") + 1);
-          socket.emit("profilepic", {ext: ext, buffer: profilepic.toString("base64")});
-        } else {
-          const profilepic = fs.readFileSync("./images/icon.png");
-          socket.emit("profilepic", {ext: 'png', buffer: profilepic.toString("base64")});
-        }
-};
+  function updateProfilePic(user) {
+    if (user.profilepic) {
+      // Profiilikuvan lähetys appiin
+      const profilepic = fs.readFileSync(user.profilepic);
+      const ext = user.profilepic.slice(user.profilepic.lastIndexOf(".") + 1);
+      socket.emit("profilepic", {
+        ext: ext,
+        buffer: profilepic.toString("base64"),
+      });
+    } else {
+      const profilepic = fs.readFileSync("./images/icon.png");
+      socket.emit("profilepic", {
+        ext: "png",
+        buffer: profilepic.toString("base64"),
+      });
+    }
+  }
 
-  socket.on("authentication", async (data, callback) => {    // Sisäänkirjautuminen
+  socket.on("authentication", async (data, callback) => {
+    // Sisäänkirjautuminen
     if (data.username == "" || data.password == "") {
       socket.emit("unauthorized", { message: "No username or password given" });
     }
@@ -105,41 +110,56 @@ function updateProfilePic (user) {
         socket.emit("loggedIn", {
           message: "Logged in succesfully.",
           sessionID: socket.id,
-     });
-                updateProfilePic(user);
-            };
-        };
-    });
+        });
+        updateProfilePic(user);
+      }
+    }
+  });
 
-    socket.on("logintest", (data) => { if (users[data.username] == socket.id) { console.log("testok") } else { console.log(socket.id) } });
+  socket.on("logintest", (data) => {
+    if (users[data.username] == socket.id) {
+      console.log("testok");
+    } else {
+      console.log(socket.id);
+    }
+  });
 
-    // Password change
-    socket.on("pwchange", async (data) => {
-        if (users[data.username] == socket.id) {
-            if (data.oldpassword == '' || data.password == '' || data.password2 == '') {
-                console.log(data);
-                io.emit("pwcanswer", { status: "Tyhjä kenttä" });
-                return;
-            };
-            if (data.oldpassword == data.password) {
-                io.emit("pwcanswer", { status: "Vanha ja uusi salasana ovat identtisiä." });
-                return;
-            };
-            const user = await User.findOne({ username: data.username });
-            if (bcrypt.compareSync(data.oldpassword, user.password)) {
-                if (data.password == data.password2) {
-                    await hashpw(data.password); // hash the password
-                    const user = await User.updateOne({ username: data.username }, { password: bcryptpw });
-                    io.emit("pwcanswer", { status: "Salasana vaihdettu" })
-                } else {
-                    io.emit("pwcanswer", { status: "New password-fields do not match" });
-                };
-            } else {
-                io.emit("pwcanswer", { status: "Vanha salasa on väärin" });
-            };
+  // Password change
+  socket.on("pwchange", async (data) => {
+    if (users[data.username] == socket.id) {
+      if (
+        data.oldpassword == "" ||
+        data.password == "" ||
+        data.password2 == ""
+      ) {
+        console.log(data);
+        io.emit("pwcanswer", { status: "Tyhjä kenttä" });
+        return;
+      }
+      if (data.oldpassword == data.password) {
+        io.emit("pwcanswer", {
+          status: "Vanha ja uusi salasana ovat identtisiä.",
+        });
+        return;
+      }
+      const user = await User.findOne({ username: data.username });
+      if (bcrypt.compareSync(data.oldpassword, user.password)) {
+        if (data.password == data.password2) {
+          await hashpw(data.password); // hash the password
+          const user = await User.updateOne(
+            { username: data.username },
+            { password: bcryptpw }
+          );
+          io.emit("pwcanswer", { status: "Salasana vaihdettu" });
+        } else {
+          io.emit("pwcanswer", { status: "New password-fields do not match" });
         }
-    });
-    socket.on("upload", async (data) => {
+      } else {
+        io.emit("pwcanswer", { status: "Vanha salasa on väärin" });
+      }
+    }
+  });
+  socket.on("upload", async (data) => {
     // Profiilikuvan tallennus
     console.log(data.name);
     fs.writeFile("./images/" + data.name, data.buffer, "base64", (err) => {
@@ -150,15 +170,14 @@ function updateProfilePic (user) {
       { username: data.username },
       { profilepic: path }
     );
-    updateProfilePic({profilepic: path});
+    updateProfilePic({ profilepic: path });
   });
 
-    // Poista lista tietokannasta
-    socket.on('deletesl', async (data) => {
-        console.log(data);
-    });
+  // Poista lista tietokannasta
+  socket.on("deletesl", async (data) => {
+    console.log(data);
+  });
 
-   
   // Tallenna uusi lista tietokantaan
   // socket.on('newsl', async (data) => {
   //     if (!data.slname == '') {
@@ -166,7 +185,7 @@ function updateProfilePic (user) {
   //     }
   // });
 
-  // Tallenna uusi lista tietokantaan (Saara)
+  // Tallenna uusi lista tietokantaan
   socket.on("newsl", async (data, callback) => {
     if (data.slname && data.username) {
       try {
@@ -182,6 +201,25 @@ function updateProfilePic (user) {
       }
     } else {
       callback({ success: false, error: "Missing username or list name" });
+    }
+  });
+
+  // Hae käyttäjän listat palvelimelta
+  socket.on("getLists", async (data, callback) => {
+    console.log("getLists kutsuttu:", data);
+    try {
+      if (!data.username) {
+        callback({ success: false, error: "Käyttäjänimi puuttuu" });
+        return;
+      }
+
+      const lists = await Shoppinglist.find({
+        owner: data.username,
+      });
+
+      callback({ success: true, lists });
+    } catch (error) {
+      callback({ success: false, error: error.message });
     }
   });
 });
