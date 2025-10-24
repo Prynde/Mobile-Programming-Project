@@ -230,11 +230,11 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         />
       </Modal>
 
-      {/* MODAALI: Yksityiset ostoslistat */}
+      {/* MODAALI: Palvelimen ostoslistat */}
       <Modal visible={privateModalVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Yksityiset ostoslistat</Text>
+            <Text style={styles.modalTitle}>Ostoslistat</Text>
             <FlatList
               data={privateLists}
               keyExtractor={(item) => item._id.toString()}
