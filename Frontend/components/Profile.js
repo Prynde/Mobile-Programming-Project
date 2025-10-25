@@ -2,22 +2,15 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-export default function Profile({ setVisibility, socket, currentUser }) {
+export default function Profile({ setVisibility, socket, currentUser, profileIcon, setprofileIcon }) {
 
     let [image, setImage] = useState("");
     let [pwcResult, setPwcResult] = useState('');
-    const [profileIcon, setprofileIcon] = useState(""); // From header.
 
     let result = [];
     const handleProfile = () => {
         setVisibility(false)
     };
-    
-    // From header.
-    socket.on('profilepic', data => {
-        console.log('receiving pic: ' + data.ext);
-        setprofileIcon("data:image/" + data.ext + ";base64," + data.buffer);
-    });
 
     const pickImage = async () => {
         result = await ImagePicker.launchImageLibraryAsync({

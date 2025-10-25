@@ -20,8 +20,11 @@ const socket = io.connect("https://lappis.mau-mooneye.ts.net", {
 export default function App() {
   const [currentUser, setCurrentUser] = useState(undefined); // Kirjautunut käyttäjä
   const [profileVisible, setProfileVisible] = useState(false);
+  const [profileIcon, setprofileIcon] = useState(""); // Moved from header.
   const handleLogout = () => {
     setCurrentUser(undefined);
+    setProfileVisible(false);
+    setprofileIcon("")
   };
 
   return (
@@ -31,6 +34,8 @@ export default function App() {
           onProfilePress={() => setProfileVisible(true)}
           onLogout={handleLogout}
           socket={socket}
+          profileIcon={profileIcon}
+          setprofileIcon={setprofileIcon}
         />
 
         <View style={styles.content}>
@@ -59,6 +64,8 @@ export default function App() {
               setVisibility={setProfileVisible}
               currentUser={currentUser}
               socket={socket}
+              profileIcon={profileIcon}
+              setprofileIcon={setprofileIcon}
             />
           ) : currentUser !== undefined ? (
             <MainMenu currentUser={currentUser} socket={socket} />
