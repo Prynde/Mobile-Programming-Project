@@ -108,6 +108,7 @@ function Register({setPressed, socket}) {
     });
 
     socket.on('registered', (message) => { // Show message for succesfull registration
+        setPressed(false)
         console.log("Registered succesfully: " + message.message);
     });
 
