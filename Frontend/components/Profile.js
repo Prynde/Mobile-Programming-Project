@@ -49,7 +49,7 @@ export default function Profile({ setVisibility, socket, currentUser, profileIco
 
     };
 
-
+    const [passwordMessage, setPasswordMessage] = useState(true);
     const [oldpassword, setPassword1] = useState("");
     const [password, setPassword2] = useState("");
     const [password2, setPassword3] = useState("");
@@ -77,6 +77,10 @@ export default function Profile({ setVisibility, socket, currentUser, profileIco
     
     socket.on('pwcanswer', (result) => {
         setPwcResult(result.status);
+        if (result.status === "Salasana vaihdettu") {
+            setPasswordMessage(true)
+        }
+        setPasswordMessage(false)
     });
 
     return (
@@ -85,24 +89,29 @@ export default function Profile({ setVisibility, socket, currentUser, profileIco
             <ScrollView style={styles.scrollview}>
                 <View style={styles.subContainer}>
                     <Text style={styles.profileHeader}>Profiilikuva</Text>
+                    {image && <Image source={{ uri: image }} style={styles.imageStyle} /> ? image && <Image source={{ uri: image }} style={styles.imageStyle} /> : <Image source={{uri: profileIcon}} style={styles.imageStyle} />}
+
                     <TouchableOpacity style={styles.buttonInput} onPress={pickImage}>
                         <Text>Valitse galleriasta</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.buttonInput} onPress={camera}>
                         <Text>Käytä kameraa</Text>
                     </TouchableOpacity>
-                    {image && <Image source={{ uri: image }} style={styles.imageStyle} /> ? image && <Image source={{ uri: image }} style={styles.imageStyle} /> : <Image source={{uri: profileIcon}} style={styles.imageStyle} />}
                 </View>
         
                 <View style={styles.subContainer}>
-                    <Text style={styles.profileHeader}>Salasana</Text>
+                    {console.log(passwordMessage)}
+                    {passwordMessage === true ? <Text style={styles.profileHeader}>Salasana</Text> : <Text style={styles.textInputTopError}>{pwcResult}</Text>}
                     <TextInput style={styles.textInput} placeholder="Vanha salasana" secureTextEntry={true} onChangeText={handlePassword1} />
                     <TextInput style={styles.textInput} placeholder="Uusi salasana" secureTextEntry={true} onChangeText={handlePassword2} />
                     <TextInput style={styles.textInput} placeholder="Toista uusi salasana" secureTextEntry={true} onChangeText={handlePassword3} />
                     <TouchableOpacity style={styles.buttonInput} onPress={() => handlePwchange(socket)}>
                         <Text>Vaihda salasana</Text>
                     </TouchableOpacity>
-                    <Text style={styles.textInputTopError}>{pwcResult}</Text>
+
+                </View>
+                <View style={styles.subContainer}>
+                    
                     <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
                         <Text>Palaa takaisin</Text>
                     </TouchableOpacity>
@@ -135,11 +144,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#EEEEEE",
         borderWidth: 2,
         marginBottom: 5,
+        paddingTop: 10
 
     },
     profileHeader: {
         fontSize: 20,
-        marginTop: "10",
         marginBottom: "auto",
         marginLeft: "auto",
         marginRight: "auto",
