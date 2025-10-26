@@ -39,18 +39,7 @@ export default function App() {
         />
 
         <View style={styles.content}>
-          <Button
-            onPress={() => console.log(currentUser)}
-            color="blue"
-            size="large"
-            title="Current user"
-          />
-          <Button
-            onPress={() => setCurrentUser("MobileMobiloija")}
-            color="blue"
-            size="large"
-            title="Test: go to main menu."
-          />
+
           {!profileVisible && (
             <TopBar
               currentUser={currentUser}
