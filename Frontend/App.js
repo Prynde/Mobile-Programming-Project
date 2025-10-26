@@ -27,11 +27,20 @@ export default function App() {
     setprofileIcon("")
   };
 
+  const profileVisibleHandler = () => {
+    console.log(profileVisible)
+    if (profileVisible === true) {
+      setProfileVisible(false)
+    } else {
+      setProfileVisible(true)
+    }
+  }
+
   return (
     <>
       <View style={styles.container}>
         <Header
-          onProfilePress={() => setProfileVisible(true)}
+          onProfilePress={profileVisibleHandler}//onProfilePress={() => setProfileVisible(true)}
           onLogout={handleLogout}
           socket={socket}
           profileIcon={profileIcon}
