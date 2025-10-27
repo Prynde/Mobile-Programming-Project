@@ -19,7 +19,7 @@ import { getListsFromServer } from "../socket";
 import { addItemToListOnServer } from "../socket";
 */
 import Toast from "react-native-toast-message";
-import dateFormat from 'dateformat';
+import dateFormat from "dateformat";
 
 export default function MainMenu({ currentUser, socket }) {
   const [newList, setNewList] = useState("");
@@ -47,34 +47,34 @@ export default function MainMenu({ currentUser, socket }) {
     setVisibility(true);
   };
 
-const sendListToServer = (list) => {
-  return new Promise((resolve, reject) => {
-    socket.emit("newsl", list, (response) => {
-      if (response?.success) resolve(response);
-      else reject(response?.error || "Unknown error");
+  const sendListToServer = (list) => {
+    return new Promise((resolve, reject) => {
+      socket.emit("newsl", list, (response) => {
+        if (response?.success) resolve(response);
+        else reject(response?.error || "Unknown error");
+      });
     });
-  });
-};
+  };
 
-const getListsFromServer = (username) => {
-  return new Promise((resolve, reject) => {
-    console.log("Socket status:", socket.connected);
-    socket.emit("getLists", { username }, (response) => {
-      if (response?.success) resolve(response.lists);
-      else reject(response?.error || "Tuntematon virhe");
+  const getListsFromServer = (username) => {
+    return new Promise((resolve, reject) => {
+      console.log("Socket status:", socket.connected);
+      socket.emit("getLists", { username }, (response) => {
+        if (response?.success) resolve(response.lists);
+        else reject(response?.error || "Tuntematon virhe");
+      });
     });
-  });
-};
+  };
 
-const addItemToListOnServer = (listId, item) => {
-  return new Promise((resolve, reject) => {
-    console.log("Socket status:", socket.connected);
-    socket.emit("addItemToList", { listId, item }, (response) => {
-      if (response?.success) resolve(response.list);
-      else reject(response?.error || "Tuntematon virhe");
+  const addItemToListOnServer = (listId, item) => {
+    return new Promise((resolve, reject) => {
+      console.log("Socket status:", socket.connected);
+      socket.emit("addItemToList", { listId, item }, (response) => {
+        if (response?.success) resolve(response.list);
+        else reject(response?.error || "Tuntematon virhe");
+      });
     });
-  });
-};
+  };
 
   const handleNewList = (props) => {
     setNewList(props);
@@ -321,7 +321,7 @@ const addItemToListOnServer = (listId, item) => {
               renderItem={({ item }) => (
                 // <Text>{item}</Text>}
 
-                <View style={styles.listItemStyle}>
+                <View style={styles.listItemStyle2}>
                   <View style={styles.listItemContent}>
                     <View style={styles.greenBullet} />
                     <Text style={styles.listItemText}>{item}</Text>
@@ -390,18 +390,21 @@ const addItemToListOnServer = (listId, item) => {
         >
           <Text>Ostoslistat</Text>
         </TouchableOpacity>
-          <View style={styles.mainMenuSelectList2}>
+        <View style={styles.mainMenuSelectList2}>
           <TouchableOpacity
             style={styles.buttonInput2}
             onPress={handleShownFilter}
           >
             <Text>Aktiiviset ostoslistat</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.buttonInput2} onPress={handleShownAll}>
+          <TouchableOpacity
+            style={styles.buttonInput2}
+            onPress={handleShownAll}
+          >
             <Text>Kaikki ostoslistat</Text>
           </TouchableOpacity>
         </View>
-        </View>
+      </View>
       <View style={styles.listStyle}>
         {shoppingList.length === 0 ? (
           <Text style={styles.topBarTitle}>
