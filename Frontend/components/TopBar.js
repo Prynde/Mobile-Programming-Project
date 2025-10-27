@@ -17,7 +17,6 @@ export default function TopBar({ currentUser, setCurrentUser, socket }) {
     setVisibility(true);
   };
 
-
   if (currentUser === undefined) {
     return (
       <View style={styles.topBar}>
@@ -68,16 +67,17 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     width: "95%",
     maxHeight: "10%",
-    marginTop: 10,
+    //marginTop: 10,
     justifyContent: "center",
     // borderWidth: 5,
     // borderRadius: 15,
     backgroundColor: "white",
+    marginBottom: 40,
   },
   topBarTitle: {
     fontSize: 35,
     fontWeight: "600",
-    marginBottom: 10,
+    marginBottom: 50,
     marginTop: "auto",
     marginBottom: "auto",
     marginLeft: "auto",

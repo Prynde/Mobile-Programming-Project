@@ -63,4 +63,29 @@ const getListsFromServer = (username) => {
   });
 };
 
-export { socket, sendListToServer, getListsFromServer };
+const addItemToListOnServer = (listId, item) => {
+  return new Promise((resolve, reject) => {
+    console.log("Socket status:", socket.connected);
+    socket.emit("addItemToList", { listId, item }, (response) => {
+      if (response?.success) resolve(response.list);
+      else reject(response?.error || "Tuntematon virhe");
+    });
+  });
+};
+
+// const handleAddItem = () => {
+//   socket.emit(
+//     "addItemToList",
+//     { listId: selectedList._id, item: newItem },
+//     (response) => {
+//       if (response.success) {
+//         setSelectedList(response.list); // päivitä lista
+//         setNewItem(""); // tyhjennä kenttä
+//       } else {
+//         console.error("Virhe lisättäessä tuotetta:", response.error);
+//       }
+//     }
+//   );
+// };
+
+export { socket, sendListToServer, getListsFromServer, addItemToListOnServer };

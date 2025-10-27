@@ -9,11 +9,13 @@ import {
   Modal,
   Switch,
   Alert,
+  Image,
 } from "react-native";
 import ListContent from "./ListContent";
 import { createList, readAllList, deleteList } from "../sqlconnection/db";
 import { socket, sendListToServer } from "../socket";
 import { getListsFromServer } from "../socket";
+import { addItemToListOnServer } from "../socket";
 import Toast from "react-native-toast-message";
 import dateFormat from 'dateformat';
 
@@ -22,11 +24,15 @@ export default function MainMenu({ currentUser /*socket*/ }) {
   const [offlineMode, setOfflineMode] = useState(false);
   const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
   const [shoppingList, setNewShoppingList] = useState([]); // Saves temporarily lists for showing them on screen.
-  const [selectedList, setSelectedList] = useState();
+  const [selectedList, setSelectedList] = useState(null);
   const [visibility, setVisibility] = useState(false); // Shows shopping list.
+  const [newItem, setNewItem] = useState("");
 
-  const [privateModalVisible, setPrivateModalVisible] = useState(false);
-  const [privateLists, setPrivateLists] = useState([]);
+  const [listOverviewVisible, setListOverviewVisible] = useState(false); //listat palvelimelta
+  const [singleListVisible, setSingleListVisible] = useState(false);
+  const [selectedListServer, setSelectedListServer] = useState(null);
+
+  const [serverLists, setServerLists] = useState([]);
 
   // On first render all lists are red from local db.
   useEffect(() => {
@@ -43,19 +49,50 @@ export default function MainMenu({ currentUser /*socket*/ }) {
     setNewList(props);
   };
 
-  const fetchPrivateLists = async () => {
+  const fetchServerLists = async () => {
     try {
       const lists = await getListsFromServer(currentUser);
       console.log("Haetut listat:", lists);
-      setPrivateLists(lists);
+      setServerLists(lists);
     } catch (error) {
-      console.error("Virhe yksityisten listojen haussa:", error);
+      console.error("Virhe listojen haussa palvelimelta:", error);
       Toast.show({
         type: "error",
         text1: "Virhe haettaessa listoja ❌",
         text2: error.toString(),
       });
     }
+  };
+
+  const handleAddItem = async () => {
+    console.log(
+      "Lisätään tuote:",
+      newItem,
+      "listaan:",
+      selectedListServer.name
+    );
+    try {
+      const updatedList = await addItemToListOnServer(
+        selectedListServer._id,
+        newItem
+      );
+      setSelectedListServer(updatedList); // päivitä lista
+      setNewItem(""); // tyhjennä kenttä
+    } catch (error) {
+      console.error("Virhe lisättäessä tuotetta:", error);
+      Toast.show({
+        type: "error",
+        text1: "Tuotteen lisäys epäonnistui ❌",
+        text2: error.toString(),
+      });
+    }
+    console.log("Tuote lisätty onnistuneesti.");
+  };
+
+  const openSingleListModal = (item) => {
+    setSelectedListServer(item);
+    setSingleListVisible(true);
+    setListOverviewVisible(false);
   };
 
   // Makes new object which are rendered. Also handles sending list to database and adding it to useState list.
@@ -75,38 +112,6 @@ export default function MainMenu({ currentUser /*socket*/ }) {
   //   }
   // };
 
-  // Makes new object which are rendered. Also handles sending list to database and adding it to useState list. (Saara added sending also to MongoDB)
-  // const handleNewListButton = async () => {
-  //   if (newList.trim().length > 0) {
-  //     const newDate = new Date();
-  //     const newShoppingList = {
-  //       //id: shoppingList.length + 1,
-  //       owner: currentUser,
-  //       title: newList.trim(),
-  //       message: "",
-  //       date: newDate.toISOString(),
-  //     };
-  //     try {
-  //       // 1. Tallenna paikalliseen SQLite-tietokantaan
-  //       await createList(newShoppingList);
-  //       console.log(
-  //         "Lista tallennettu SQL:n paikalliseen tietokantaan:",
-  //         newShoppingList
-  //       );
-
-  //       // 2. Lähetä palvelimelle (jos yhteys on)
-  //       await sendListToServer(newShoppingList);
-  //       console.log("Lista lähetetty palvelimelle:", newShoppingList);
-
-  //       // 3. Päivitä käyttöliittymä
-  //       updateNewShoppingListState();
-  //     } catch (error) {
-  //       console.error("Error while creating new list:", error);
-  //     }
-  //   }
-  // };
-
-  //Toinen yritys (Saara)
   const handleNewListButton = async () => {
     if (newList.trim().length === 0) return;
 
@@ -127,10 +132,6 @@ export default function MainMenu({ currentUser /*socket*/ }) {
           "Lista tallennettu paikalliseen SQLite-tietokantaan:",
           newShoppingList
         );
-        // Alert.alert(
-        //   "Tallennettu",
-        //   "Lista tallennettiin paikalliseen tietokantaan."
-        // );
         Toast.show({
           type: "success",
           text1: "Lista tallennettu offline-tilassa ✅",
@@ -140,10 +141,6 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         // ONLINE: MongoDB
         if (!socket || !socket.connected) {
           console.warn("Ei yhteyttä palvelimeen.");
-          // Alert.alert(
-          //   "Virhe",
-          //   "Ei yhteyttä palvelimeen, yritä myöhemmin uudelleen."
-          // );
           Toast.show({
             type: "error",
             text1: "Ei yhteyttä palvelimeen ❌",
@@ -231,32 +228,88 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         />
       </Modal>
 
-      {/* MODAALI: Yksityiset ostoslistat */}
-      <Modal visible={privateModalVisible} transparent={true}>
+      {/* MODAALI: Palvelimen ostoslistat */}
+      <Modal visible={listOverviewVisible} transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Yksityiset ostoslistat</Text>
+            <Text style={styles.modalTitle}>Ostoslistat</Text>
             <FlatList
-              data={privateLists}
-              keyExtractor={(item) => item.id.toString()}
+              data={serverLists}
+              keyExtractor={(item) => item._id.toString()}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.listItemStyle}
-                  onPress={() => handleListContent(item)}
+                  style={styles.listItemStyle2}
+                  onPress={() => openSingleListModal(item)}
                 >
-                  <Text>
-                    {item.title} {item.date}
-                  </Text>
+                  <View style={styles.listItemContent}>
+                    <View style={styles.greenBullet} />
+                    <Text style={styles.listItemText}>{item.name}</Text>
+                  </View>
                 </TouchableOpacity>
               )}
             />
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setPrivateModalVisible(false)}
+              onPress={() => setListOverviewVisible(false)}
             >
               <Text>Sulje</Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/*MODAALI LISÄÄ TUOTE*/}
+      <Modal visible={singleListVisible} transparent={false}>
+        <View style={styles.modalContent}>
+          {/* Listan nimi */}
+          <Text style={styles.modalTitle}>
+            {selectedListServer?.name ?? "Lista"}
+          </Text>
+
+          {/* Input + kuvapainike rivissä */}
+          <View style={styles.inputRow}>
+            <TextInput
+              value={newItem}
+              onChangeText={setNewItem}
+              placeholder="Lisää tuote"
+              style={styles.textInputNewListServer}
+            />
+            <TouchableOpacity onPress={handleAddItem}>
+              <Image
+                source={require("../assets/basket.png")}
+                style={styles.addButtonImage}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Lista tai tyhjäteksti */}
+          {selectedListServer?.content?.length > 0 ? (
+            <FlatList
+              data={selectedListServer.content}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ item }) => (
+                // <Text>{item}</Text>}
+
+                <View style={styles.listItemStyle}>
+                  <View style={styles.listItemContent}>
+                    <View style={styles.greenBullet} />
+                    <Text style={styles.listItemText}>{item}</Text>
+                  </View>
+                </View>
+              )}
+              style={styles.list}
+            />
+          ) : (
+            <Text style={styles.emptyText}>Lista on tyhjä.</Text>
+          )}
+
+          {/* Sulje-painike*/}
+          <TouchableOpacity
+            onPress={() => setSingleListVisible(false)}
+            style={styles.closeButton}
+          >
+            <Text>Sulje</Text>
+          </TouchableOpacity>
         </View>
       </Modal>
 
@@ -297,9 +350,11 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         <TouchableOpacity
           style={styles.buttonInput}
           onPress={() => {
-            fetchPrivateLists(); // tämä hakee MongoDB:stä
-            setPrivateModalVisible(true); // avaa modaalin
-            alert("Jee");
+            fetchServerLists(); // tämä hakee MongoDB:stä
+            setListOverviewVisible(true); // avaa modaalin
+            console.log(
+              "Listat haettu palvelimelta ja modaalin pitäisi aueta."
+            );
           }}
         >
           <Text>Ostoslistat</Text>
@@ -395,6 +450,19 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#40c844ff",
   },
+
+  textInputNewListServer: {
+    borderWidth: 2,
+    borderColor: "#40c844ff",
+    height: 40,
+    width: "50%",
+    backgroundColor: "#EEEEEE",
+    marginTop: 10,
+    borderRadius: 40,
+    textAlignVertical: "center",
+    paddingHorizontal: 10,
+  },
+
   buttonNewList: {
     height: 40,
     width: "30%",
@@ -465,10 +533,9 @@ const styles = StyleSheet.create({
   },
 
   offlineSwitchContainer: {
-    justifyContent: "center",
+    //justifyContent: "center",
     alignItems: "center",
   },
-
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -493,5 +560,53 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#ddd",
     borderRadius: 5,
+  },
+
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // keskittää koko rivin
+    marginVertical: 10,
+  },
+
+  textInputNewListServer: {
+    height: 40,
+    flex: 1, // vie tilaa riviltä
+    backgroundColor: "#EEEEEE",
+    paddingHorizontal: 10,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "#40c844ff",
+    textAlignVertical: "center",
+  },
+
+  addButtonImage: {
+    width: 40,
+    height: 40,
+    marginLeft: 10,
+  },
+
+  listItemStyle2: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginVertical: 6,
+  },
+
+  listItemText: {
+    fontSize: 16,
+    color: "#333",
+  },
+
+  listItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  greenBullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#40c844",
+    marginRight: 10,
   },
 });

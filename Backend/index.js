@@ -240,6 +240,22 @@ io.on("connection", function (socket) {
   });
 });
 
+// Lisää ostoslistaan uusi tuote
+socket.on("addItemToList", async (data, callback) => {
+  console.log("addItemstoList kutsuttu:", data);
+  try {
+    const { listId, item } = data;
+    const updatedList = await Shoppinglist.findByIdAndUpdate(
+      listId,
+      { $push: { content: item } },
+      { new: true }
+    );
+    callback({ success: true, list: updatedList });
+  } catch (error) {
+    callback({ success: false, error: error.message });
+  }
+});
+
 
 // Tässä oli kyllä tietoturva kohdillaan mutta ei toimi testaustilanteessa
 // koska sisäänkirjautuminen vanhenee joka kerta kun appi uudelleenkäynnistyy.
