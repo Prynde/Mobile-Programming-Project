@@ -13,13 +13,15 @@ import {
 } from "react-native";
 import ListContent from "./ListContent";
 import { createList, readAllList, deleteList } from "../sqlconnection/db";
+/* Erillisen socket.js tiedoston sijaan jaetaan App.js-socket-yhteys kaikkien näkymien kesken
 import { socket, sendListToServer } from "../socket";
 import { getListsFromServer } from "../socket";
 import { addItemToListOnServer } from "../socket";
+*/
 import Toast from "react-native-toast-message";
 import dateFormat from 'dateformat';
 
-export default function MainMenu({ currentUser /*socket*/ }) {
+export default function MainMenu({ currentUser, socket }) {
   const [newList, setNewList] = useState("");
   const [offlineMode, setOfflineMode] = useState(false);
   const [shown, setShown] = useState(true); // If true all lists are shown, if false only recent ones are. DEFINE WHAT ARE ACITVE SHOPPING LISTS, THIS IS KIND OF USELESS RIGHT NOW!
@@ -44,6 +46,35 @@ export default function MainMenu({ currentUser /*socket*/ }) {
     setSelectedList(props);
     setVisibility(true);
   };
+
+const sendListToServer = (list) => {
+  return new Promise((resolve, reject) => {
+    socket.emit("newsl", list, (response) => {
+      if (response?.success) resolve(response);
+      else reject(response?.error || "Unknown error");
+    });
+  });
+};
+
+const getListsFromServer = (username) => {
+  return new Promise((resolve, reject) => {
+    console.log("Socket status:", socket.connected);
+    socket.emit("getLists", { username }, (response) => {
+      if (response?.success) resolve(response.lists);
+      else reject(response?.error || "Tuntematon virhe");
+    });
+  });
+};
+
+const addItemToListOnServer = (listId, item) => {
+  return new Promise((resolve, reject) => {
+    console.log("Socket status:", socket.connected);
+    socket.emit("addItemToList", { listId, item }, (response) => {
+      if (response?.success) resolve(response.list);
+      else reject(response?.error || "Tuntematon virhe");
+    });
+  });
+};
 
   const handleNewList = (props) => {
     setNewList(props);
