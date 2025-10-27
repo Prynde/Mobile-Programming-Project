@@ -96,6 +96,12 @@ export default function MainMenu({ currentUser, socket }) {
   };
 
   const handleAddItem = async () => {
+    // Kenttä on tyhjä tai pelkkiä välilyöntejä
+    if (!newItem.trim()) {
+      Alert.alert("Virhe", "Syötä tuote ennen lisäämistä ⚠️");
+      return;
+    }
+
     console.log(
       "Lisätään tuote:",
       newItem,
