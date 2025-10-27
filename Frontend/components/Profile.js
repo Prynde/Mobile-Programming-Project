@@ -35,7 +35,8 @@ export default function Profile({ setVisibility, socket, currentUser, profileIco
             quality: 1,
             base64: true
         });
-        
+                console.log('pickImage: ' + result.assets[0].base64);
+
 
         if (!result.canceled) {
             setImage(result.assets[0].uri);

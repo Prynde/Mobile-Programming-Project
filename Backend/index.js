@@ -161,6 +161,7 @@ io.on("connection", function (socket) {
   });
   socket.on("upload", async (data) => {
     // Profiilikuvan tallennus
+    console.log("Profiilikuvan päivitys");
     console.log(data.name);
     fs.writeFile("./images/" + data.name, data.buffer, "base64", (err) => {
       console.log({ message: err ? "failure" : "success" });
