@@ -17,6 +17,7 @@ import { socket, sendListToServer } from "../socket";
 import { getListsFromServer } from "../socket";
 import { addItemToListOnServer } from "../socket";
 import Toast from "react-native-toast-message";
+import dateFormat from 'dateformat';
 
 export default function MainMenu({ currentUser /*socket*/ }) {
   const [newList, setNewList] = useState("");
@@ -210,7 +211,7 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         onPress={() => handleListContent(item.item)}
       >
         <Text>
-          {item.item.title} {item.item.date}
+          {item.item.title} {dateFormat(item.item.date, "hh:mm dd.mm.yyyy")}
         </Text>
       </TouchableOpacity>
     );
@@ -358,16 +359,18 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         >
           <Text>Ostoslistat</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.buttonInput}
-          onPress={handleShownFilter}
-        >
-          <Text>Aktiiviset ostoslistat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.buttonInput} onPress={handleShownAll}>
-          <Text>Kaikki ostoslistat</Text>
-        </TouchableOpacity>
-      </View>
+          <View style={styles.mainMenuSelectList2}>
+          <TouchableOpacity
+            style={styles.buttonInput2}
+            onPress={handleShownFilter}
+          >
+            <Text>Aktiiviset ostoslistat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.buttonInput2} onPress={handleShownAll}>
+            <Text>Kaikki ostoslistat</Text>
+          </TouchableOpacity>
+        </View>
+        </View>
       <View style={styles.listStyle}>
         {shoppingList.length === 0 ? (
           <Text style={styles.topBarTitle}>
@@ -426,6 +429,14 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     minHeight: 35,
   },
+  mainMenuSelectList2: {
+    backgroundColor: "white",
+    flex: 1,
+    flexDirection: "row",
+    width: "100%",
+    paddingBottom: 100,
+    minHeight: 35,
+  },
   textInputNewList: {
     height: 40,
     width: "50%",
@@ -469,6 +480,21 @@ const styles = StyleSheet.create({
   buttonInput: {
     height: 40,
     width: "90%",
+    backgroundColor: "#EEEEEE",
+    alignItems: "center",
+    justifyContent: "space-around",
+    //marginTop: 5,
+    marginTop: 12, // lisää väliä yläpuolelle
+    marginBottom: 12,
+    marginLeft: "auto",
+    marginRight: "auto",
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: "#40c844ff",
+  },
+  buttonInput2: {
+    height: 40,
+    width: "40%",
     backgroundColor: "#EEEEEE",
     alignItems: "center",
     justifyContent: "space-around",
