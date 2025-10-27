@@ -17,9 +17,11 @@ export default function Header({
   profileSource,
   onProfilePress = () => {},
   onLogout = () => {},
+  profileIcon,
+  setprofileIcon
+
 }) {
   const [menuVisible, setMenuVisible] = useState(false);
-  const [profileIcon, setprofileIcon] = useState("");
   const [fontsLoaded] = useFonts({
     JustAnotherHand: require("../assets/fonts/JustAnotherHand-Regular_e324a4054498cee2bae0e36df7910e11.ttf"),
   });

@@ -20,32 +20,35 @@ const socket = io.connect("https://lappis.mau-mooneye.ts.net", {
 export default function App() {
   const [currentUser, setCurrentUser] = useState(undefined); // Kirjautunut käyttäjä
   const [profileVisible, setProfileVisible] = useState(false);
+  const [profileIcon, setprofileIcon] = useState(""); // Moved from header.
   const handleLogout = () => {
     setCurrentUser(undefined);
+    setProfileVisible(false);
+    setprofileIcon("")
   };
+
+  const profileVisibleHandler = () => {
+    console.log(profileVisible)
+    if (profileVisible === true) {
+      setProfileVisible(false)
+    } else {
+      setProfileVisible(true)
+    }
+  }
 
   return (
     <>
       <View style={styles.container}>
         <Header
-          onProfilePress={() => setProfileVisible(true)}
+          onProfilePress={profileVisibleHandler}//onProfilePress={() => setProfileVisible(true)}
           onLogout={handleLogout}
           socket={socket}
+          profileIcon={profileIcon}
+          setprofileIcon={setprofileIcon}
         />
 
         <View style={styles.content}>
-          <Button
-            onPress={() => console.log(currentUser)}
-            color="blue"
-            size="large"
-            title="Current user"
-          />
-          <Button
-            onPress={() => setCurrentUser("MobileMobiloija")}
-            color="blue"
-            size="large"
-            title="Test: go to main menu."
-          />
+
           {!profileVisible && (
             <TopBar
               currentUser={currentUser}
@@ -59,6 +62,8 @@ export default function App() {
               setVisibility={setProfileVisible}
               currentUser={currentUser}
               socket={socket}
+              profileIcon={profileIcon}
+              setprofileIcon={setprofileIcon}
             />
           ) : currentUser !== undefined ? (
             <MainMenu currentUser={currentUser} socket={socket} />

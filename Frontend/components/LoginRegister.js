@@ -63,7 +63,7 @@ function Login({setPressed, setCurrentUser, socket}) {
 
     return (
         <View style={styles.loginBox}>
-            {loginCorrect === true ? <Text style={styles.textInputTop}>Kirjaudu sisään, tai luo uusi tunnus!</Text> : <Text style={styles.textInputTopError}>Käyttäjätunnus tai salasana väärin.</Text>}
+            {loginCorrect === true ? <Text style={styles.textInputTop}>Kirjaudu sisään tai luo uusi tunnus</Text> : <Text style={styles.textInputTopError}>Käyttäjätunnus tai salasana väärin.</Text>}
             <TextInput style={styles.textInput} placeholder="Käyttäjätunnus" onChangeText={handleUsername}/>
             <TextInput style={styles.textInput} placeholder="Salasana" secureTextEntry={true} onChangeText={handlePassword}/>
             
@@ -108,6 +108,7 @@ function Register({setPressed, socket}) {
     });
 
     socket.on('registered', (message) => { // Show message for succesfull registration
+        setPressed(false)
         console.log("Registered succesfully: " + message.message);
     });
 
@@ -135,14 +136,14 @@ const styles = StyleSheet.create({
         flex: 5,
         flexDirection: "column",
         alignItems:"flex-start",
-        width: "95%",
+        width: "100%",
         maxHeight: "50%",
         marginTop: 10,
         marginBottom: 10,
         justifyContent:"center",
-        borderWidth: 5,
-        borderRadius:15,
-        backgroundColor: "#818080ff",
+        borderWidth: 0,
+        borderRadius:0,
+        backgroundColor: "#EEEEEE",
     },
     textInputTop: {
         fontSize: 20,
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
         height: 40,
         width: "90%",
         margin: 1,
-        backgroundColor: "#abababff",
+        backgroundColor: "#fff",
         marginTop: 1,
         justifyContent: "space-around",
         alignItems: "center",
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     buttonInput: {
         height: 40,
         width: "90%",
-        backgroundColor: "#abababff",
+        backgroundColor: "#EEEEEE",
         alignItems: "center",
         justifyContent: "space-around",
         marginTop: 5,

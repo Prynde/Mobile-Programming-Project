@@ -13,7 +13,7 @@ export default function Footer({ children }) {
 const styles = StyleSheet.create({
   footer: {
     width: "100%",
-    height: 140,
+    height: 50,
     paddingTop: Platform.OS === "ios" ? 20 : 10,
     backgroundColor: "#08CB00",
     alignItems: "center",

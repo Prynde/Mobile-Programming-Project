@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button } from "react-native";
+import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Button, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 
-export default function Profile({ setVisibility, socket, currentUser }) {
+export default function Profile({ setVisibility, socket, currentUser, profileIcon, setprofileIcon }) {
 
     let [image, setImage] = useState("");
     let [pwcResult, setPwcResult] = useState('');
+
     let result = [];
     const handleProfile = () => {
         setVisibility(false)
     };
-    
 
     const pickImage = async () => {
         result = await ImagePicker.launchImageLibraryAsync({
@@ -49,7 +49,7 @@ export default function Profile({ setVisibility, socket, currentUser }) {
 
     };
 
-
+    const [passwordMessage, setPasswordMessage] = useState(true);
     const [oldpassword, setPassword1] = useState("");
     const [password, setPassword2] = useState("");
     const [password2, setPassword3] = useState("");
@@ -77,36 +77,46 @@ export default function Profile({ setVisibility, socket, currentUser }) {
     
     socket.on('pwcanswer', (result) => {
         setPwcResult(result.status);
+        if (result.status === "Salasana vaihdettu") {
+            setPasswordMessage(true)
+        }
+        setPasswordMessage(false)
     });
 
     return (
-
+    
         <View style={styles.container}>
-            <View style={styles.subContainer}>
-                <Text style={styles.profileHeader}>Profiilikuva</Text>
-                <TouchableOpacity style={styles.buttonInput} onPress={pickImage}>
-                    <Text>Valitse galleriasta</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonInput} onPress={camera}>
-                    <Text>Käytä kameraa</Text>
-                </TouchableOpacity>
-                {image && <Image source={{ uri: image }} style={styles.image} />}
-            </View>
+            <ScrollView style={styles.scrollview}>
+                <View style={styles.subContainer}>
+                    <Text style={styles.profileHeader}>Profiilikuva</Text>
+                    {image && <Image source={{ uri: image }} style={styles.imageStyle} /> ? image && <Image source={{ uri: image }} style={styles.imageStyle} /> : <Image source={{uri: profileIcon}} style={styles.imageStyle} />}
 
-            <View style={styles.subContainer}>
-                <TextInput style={styles.textInput} placeholder="Vanha salasana" secureTextEntry={true} onChangeText={handlePassword1} />
-                <TextInput style={styles.textInput} placeholder="Uusi salasana" secureTextEntry={true} onChangeText={handlePassword2} />
-                <TextInput style={styles.textInput} placeholder="Toista uusi salasana" secureTextEntry={true} onChangeText={handlePassword3} />
-                <Text style={styles.textInputTopError}>{pwcResult}</Text>
-                <TouchableOpacity style={styles.buttonInput} onPress={() => handlePwchange(socket)}>
-                    <Text>Vaihda salasana</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
-                    <Text>Palaa takaisin</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity style={styles.buttonInput} onPress={pickImage}>
+                        <Text>Valitse galleriasta</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.buttonInput} onPress={camera}>
+                        <Text>Käytä kameraa</Text>
+                    </TouchableOpacity>
+                </View>
+        
+                <View style={styles.subContainer}>
+                    {console.log(passwordMessage)}
+                    {passwordMessage === true ? <Text style={styles.profileHeader}>Salasana</Text> : <Text style={styles.textInputTopError}>{pwcResult}</Text>}
+                    <TextInput style={styles.textInput} placeholder="Vanha salasana" secureTextEntry={true} onChangeText={handlePassword1} />
+                    <TextInput style={styles.textInput} placeholder="Uusi salasana" secureTextEntry={true} onChangeText={handlePassword2} />
+                    <TextInput style={styles.textInput} placeholder="Toista uusi salasana" secureTextEntry={true} onChangeText={handlePassword3} />
+                    <TouchableOpacity style={styles.buttonInput} onPress={() => handlePwchange(socket)}>
+                        <Text>Vaihda salasana</Text>
+                    </TouchableOpacity>
 
-
+                </View>
+                <View style={styles.subContainer}>
+                    
+                    <TouchableOpacity style={styles.buttonInput} onPress={handleProfile}>
+                        <Text>Palaa takaisin</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </View>
     );
 }
@@ -119,49 +129,61 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: "flex-start",
         height: "50%",
-        backgroundColor: "#818080ff"
+        backgroundColor: "#fff"
+    },
+    scrollview: {
+        width: "100%"
     },
     subContainer: {
         flex: 1,
-        width: "80%",
+        width: "100%",
         height: "50%",
         flexDirection: "column",
         justifyContent: "flex-start",
         alignItems: "center",
-        backgroundColor: "#666666ff",
+        backgroundColor: "#EEEEEE",
         borderWidth: 2,
         marginBottom: 5,
+        paddingTop: 10
 
     },
     profileHeader: {
         fontSize: 20,
-        marginTop: "auto",
         marginBottom: "auto",
         marginLeft: "auto",
         marginRight: "auto",
     },
-    image: {
-        width: 200,
-        height: 200,
-        borderRadius: 100
+    imageStyle: {
+        flex: 1,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        borderWidth: 1,
+        alignItems: "center",
+        justifyContent: "space-evenly",
+        marginBottom: 10,
+        resizeMode: "cover"
     },
     buttonInput: {
-        width: "70%",
-        height: 50,
-        marginTop: 5,
-        backgroundColor: "#abababff",
+        height: 40,
+        width: "90%",
+        backgroundColor: "#EEEEEE",
         alignItems: "center",
         justifyContent: "space-around",
+        marginBottom: 10,
+        marginLeft: "auto",
+        marginRight: "auto",
         borderRadius: 15,
         borderWidth: 2,
-        borderColor: "#40c844ff",
+        borderColor: "#40c844ff", 
     },
     textInput: {
         height: 40,
         width: "90%",
         margin: 1,
-        backgroundColor: "#abababff",
+        backgroundColor: "#fff",
         marginTop: 1,
+        marginBottom: 10,
         justifyContent: "space-around",
         alignItems: "center",
         marginLeft: "auto",
