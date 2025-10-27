@@ -238,9 +238,7 @@ io.on("connection", function (socket) {
       callback({ success: false, error: error.message });
     }
   });
-});
-
-// Lisää ostoslistaan uusi tuote
+  // Lisää ostoslistaan uusi tuote
 socket.on("addItemToList", async (data, callback) => {
   console.log("addItemstoList kutsuttu:", data);
   try {
@@ -255,6 +253,9 @@ socket.on("addItemToList", async (data, callback) => {
     callback({ success: false, error: error.message });
   }
 });
+});
+
+
 
 
 // Tässä oli kyllä tietoturva kohdillaan mutta ei toimi testaustilanteessa
