@@ -15,6 +15,7 @@ import { createList, readAllList, deleteList } from "../sqlconnection/db";
 import { socket, sendListToServer } from "../socket";
 import { getListsFromServer } from "../socket";
 import Toast from "react-native-toast-message";
+import dateFormat from 'dateformat';
 
 export default function MainMenu({ currentUser /*socket*/ }) {
   const [newList, setNewList] = useState("");
@@ -213,7 +214,7 @@ export default function MainMenu({ currentUser /*socket*/ }) {
         onPress={() => handleListContent(item.item)}
       >
         <Text>
-          {item.item.title} {item.item.date}
+          {item.item.title} {dateFormat(item.item.date, "hh:mm dd.mm.yyyy")}
         </Text>
       </TouchableOpacity>
     );
