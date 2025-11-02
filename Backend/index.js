@@ -126,7 +126,7 @@ io.on("connection", function (socket) {
 
   // Password change
   socket.on("pwchange", async (data) => {
-    if (users[data.username] == socket.id) {
+    if (users[data.username] == socket.id) { // Tarkista sisäänkirjautuminen
       if (
         data.oldpassword == "" ||
         data.password == "" ||
@@ -239,21 +239,7 @@ io.on("connection", function (socket) {
       callback({ success: false, error: error.message });
     }
   });
-  // Lisää ostoslistaan uusi tuote
-socket.on("addItemToList", async (data, callback) => {
-  console.log("addItemstoList kutsuttu:", data);
-  try {
-    const { listId, item } = data;
-    const updatedList = await Shoppinglist.findByIdAndUpdate(
-      listId,
-      { $push: { content: item } },
-      { new: true }
-    );
-    callback({ success: true, list: updatedList });
-  } catch (error) {
-    callback({ success: false, error: error.message });
-  }
-});
+
 });
 
 
